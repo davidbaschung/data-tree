@@ -8,11 +8,19 @@
     </head>
     <body onload="onPageLoaded">
         <div id="main">
-            <h1>Tree Project</h1>
+            <h1>Data Tree Project</h1>
             <span>Number of persons : </span>
             <input type="text" id="nbPersonsInput" onclick="this.value=''" onkeydown="nbPersonsInput(event, this.value)" />
             <button onclick="displayPersons($('nbPersonsInput').value)">Apply</button>
             <span id="loading" hidden>Loading ...</span>
+            <select>
+                <option value="data">List people as defined in data</option>
+                <option value="alphabetical">Sort people in alphabetical order</option>
+                <option value="sort by">Sort people by ... (choose)</option>
+            </select>
+            <select hidden>
+                <!-- (for "sort-by") TODO read data and display 2nd select list -->
+            </select>
             <br><br>
             <div id="personsList">
                 
