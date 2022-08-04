@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Data Tree Project</title>
+        <link href="styles.css" rel="stylesheet" type="text/css" />
+        <link rel="icon" href="https://www.swisstxt.ch/favicon.gif" type="image/gif" />
+        <script src="app.js" ></script>
+    </head>
+    <body onload="onPageLoaded">
+        <div id="main">
+            <h1>Tree Project</h1>
+            <span>Number of persons : </span>
+            <input type="text" id="nbPersonsInput" onclick="this.value=''" onkeydown="nbPersonsInput(event, this.value)" />
+            <button onclick="displayPersons($('nbPersonsInput').value)">Apply</button>
+            <span id="loading" hidden>Loading ...</span>
+            <br><br>
+            <div id="personsList">
+                
+            </div>
+        </div>
+
+    </body>
+</html>
