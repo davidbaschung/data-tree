@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Data Tree Project</title>
+        <title>Management builder</title>
         <link href="styles.css" rel="stylesheet" type="text/css" />
         <link rel="icon" href="https://www.swisstxt.ch/favicon.gif" type="image/gif" />
         <script src="app.js" ></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
-    <body onload="onPageLoaded">
+    <body onload="onPageLoaded()">
         <div id="main">
-            <h1>Data Tree Project</h1>
-            <span>Number of persons : </span>
-            <input type="text" id="nbPersonsInput" onclick="this.value=''" onkeydown="nbPersonsInput(event, this.value)" />
-            <button onclick="displayPersons($('nbPersonsInput').value)">Apply</button>
-            <span id="loading" hidden>Loading ...</span>
-            <select>
-                <option value="data">List people as defined in data</option>
-                <option value="alphabetical">Sort people in alphabetical order</option>
-                <option value="sort by">Sort people by ... (choose)</option>
-            </select>
-            <select hidden>
-                <!-- (for "sort-by") TODO read data and display 2nd select list -->
-            </select>
-            <br><br>
-            <div id="personsList">
-                
+            <h3>Hierarchical Organizational Chart Builder</h3>
+            <div class="flex-container">
+                <small class="flex-comment">flex-container</small>
+                <div class="flex-row">
+                    <span>Number of persons : </span>
+                    <input type="text" id="nbPersonsInput" onclick="this.value=''" onkeydown="nbPersonsInput(event, this.value)" autofocus style="width:2.5em" />
+                    <span>(max 5000)</span>
+                    <button onclick="createPersons($('nbPersonsInput').value)">Apply</button>
+                    <span id="loading" class="lightBox" hidden>Loading ...</span>
+                    <span id="alert" class="alertBox" hidden>Enter an integer smaller than 5000 ...</span>
+                </div>
+                <div class="flex-row">
+                    <ul id="tree"> 
+                        <span class="lightText">Results</span>
+                    </ul>
+
+                </div>
             </div>
         </div>
 
