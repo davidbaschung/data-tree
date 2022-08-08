@@ -1,47 +1,64 @@
 :root {
-    --maxRed: orangered;
+  --maxRed: orangered;
+  --border-thickness: 3px;
+  --radius: 0.5em;
+}
+
+*.lazy-background {
+  background-image: url("http://s3.amazonaws.com/pix.iemoji.com/images/emoji/apple/ios-12/256/volcano.png");
+}
+
+*.background {
+  /* best case : use videos/images CDN */
+  background-image: url("https://wallpapershome.com/images/pages/pic_h/558.jpg");
+  background-size: auto;
 }
 
 body {
-    font-family: "Arial";
+  font-family: "Arial";
+  font-display: fallback;
 }
 
 *[hidden] {
-    visibility: hidden;
+  visibility: hidden;
 }
 
 span {
-    border-radius: 5px;
-    padding: 5px;
+  border-radius: var(--radius);
+  padding: 5px;
 }
 
-*.lightBox {
-    color: darkgrey;
-    background-color: rgb(240, 240, 240);
-    border: 1px solid darkgrey;
+*.light-box {
+  color: darkgrey;
+  background-color: rgb(240, 240, 240);
+  border: 1px solid darkgrey;
 }
 
-*.alertBox {
-    color: red;
-    background-color: rgb(255, 217, 222);
-    border: 1px solid darkred;
+*.alert-box {
+  color: red;
+  background-color: rgb(255, 217, 222);
+  border: 1px solid darkred;
 }
 
 h1, h2, h3 {
-    color : brown;
+  color : brown;
+  border: var(--border-thickness) solid brown;
+  border-radius: var(--radius);
+  background-color: var(--maxRed);
+  padding: 10px;
 }
 
-div, h1 {
-    border-radius: 0.5em;
-    padding: 0.2em;
+div {
+  border-radius: var(--radius);
+  padding: 0.2em;
 }
 
 small {
-    margin: 0px;
-    padding: 0px;
+  margin: 0px;
+  padding: 0px;
 }
 
-*.lightText {
+*.light-text {
     color: lightslategray;
 }
 
@@ -50,61 +67,73 @@ small {
 }
 
 *.flex-container {
-    display: flex;
-    flex-flow: column wrap;
-    justify-content: flex-start;
-    row-gap: 0.5em;
-    border: 3px solid var(--maxRed);
-    background: linear-gradient(lightsalmon, orange);
-    margin: 0px;
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  row-gap: 0.5em;
+  border: var(--border-thickness) solid var(--maxRed);
+  background: linear-gradient(lightsalmon, orange);
+  margin: 0px;
 }
 
 div.flex-row {
-    flex: 1;
-    margin-left:0.3em;
-    margin-right:0.3em;
-    background-color: rgb(255, 224, 184);
+  flex: 1;
+  margin-left:0.3em;
+  margin-right:0.3em;
+  background-color: rgb(255, 224, 184);
 }
+
+*.person {
+  width: fit-content;
+}
+
+*.name-field {
+  background-color : white;
+  
+}
+
   
 
+
+/* TODO carets */
 
 /* Remove default bullets */
 ul, #myUL {
-    list-style-type: none;
-  }
-  
-  /* Remove margins and padding from the parent ul */
-  #tree {
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Style the caret/arrow */
-  .caret {
-    cursor: pointer;
-    user-select: none; /* Prevent text selection */
-  }
-  
-  /* Create the caret/arrow with a unicode, and style it */
-  .caret::before {
-    content: "\25B6";
-    color: blue;
-    display: inline-block;
-    margin-right: 6px;
-  }
-  
-  /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-  .caret-down::before {
-    transform: rotate(90deg);
-  }
-  
-  /* Hide the nested list */
-  .nested {
-    /* display: none; */
-    visibility:hidden;
-  }
-  
-  /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
-  .active {
-    display: block;
-  }
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#tree {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the caret/arrow */
+.caret {
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.caret::before {
+  content: "\25B6";
+  color: blue;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+.caret-down::before {
+  transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+  /* display: none; */
+  visibility:hidden;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.active {
+  display: block;
+}

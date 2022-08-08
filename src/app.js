@@ -23,12 +23,12 @@ function log(tag='', ...contents) {
 
 
 
-/*  #region SPA script execution */
+/*  #region runtime variables */
 
 // let initialNbPersonsInput = 3;
-let childsData = [];   /* JSON data for every person */
+let personsData = [];   /* JSON data for every person */
 let randomTree = null;  /* random Tree composed with structural PersonTreeNodes */
-let domTree;            /* the HTML element with the "tree" ID */
+// let domTree;            /* the HTML element with the "tree" ID */
 
 /*  onPageLoaded is called later */
 
@@ -36,13 +36,46 @@ let domTree;            /* the HTML element with the "tree" ID */
 
 
 
-/* #region SPA methods */
+/* #region SPA methods & definitions */
+
+customElements.define("person-display",
+    class extends HTMLElement {
+        constructor() {
+            super();
+            const template = $("person-display-template").content;
+            const shadowRoot = this.attachShadow({mode: 'open'});
+            shadowRoot.appendChild(template.cloneNode(true));
+        }
+    }
+);
+
+document.addEventListener("DOMContentLoaded", () => {
+    let lazyBackgroundElement = document.querySelector(".lazy-background");
+
+    if ("IntersectionObserver" in window) {
+        let lazyObserver = new IntersectionObserver( (entries, observer) => {
+            entries.forEach( (entry) => {
+                if (entry.isIntersecting) {
+                    lazyBackgroundElement.classList.remove("lazy-background");
+                    lazyBackgroundElement.classList.add("background");
+                    // lazyObserver.unobserve( "no src in html" );
+                }
+            });
+        });
+        lazyObserver.observe(lazyBackgroundElement);
+    } else log("no intersection observer");
+});
 
 function onPageLoaded() {
-    log("page loaded");
-    domTree = $('tree');
-    // $('nbPersonsInput').value=initialNbPersonsInput;
-    // createPersons(initialNbPersonsInput);
+//     let lazyBackgroundElement = document.querySelector(".lazy-background");
+//     lazyBackgroundElement.classList.remove("lazy-background");
+//     lazyBackgroundElement.classList.add("background");
+//     // const perfData = window.performance.timing;
+//     // const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+//     // log("Page loaded. rendering time", pageLoadTime);
+//     // domTree = $('tree');
+//     // $('nbPersonsInput').value=initialNbPersonsInput;
+//     // createPersons(initialNbPersonsInput);
 }
 
 /* generates a random full tree from a JSON array */
@@ -53,7 +86,7 @@ function generatePersonsRandomTree(jsonArray) {
             this.parentNode = parent;
             this.childNodes = [];
             this.jsonIndex = index; /* data index and also DOM element ID */
-            // TODO only use DOM id?
+            // this.domElementNode = ... // TODO
         }
     }
     let jsonLowIndex = 0;
@@ -91,13 +124,13 @@ async function createPersons(amount) {
     $("alert").setAttribute("hidden", null);
     // initialNbPersonsInput = amount;
     await loadPersons(amount);
-    randomTree = generatePersonsRandomTree(childsData);
+    randomTree = generatePersonsRandomTree(personsData);
     displayPersons();
 }
 
 function displayPersons() {
-    domTree.innerHTML = "";
-    generateUnorderedListItem(domTree, randomTree);
+    $("treeContainer").innerHTML = "";
+    $("treeContainer").appendChild(applyListItemTemplate(randomTree));
     recDisplayPersons(randomTree);
 }
 
@@ -113,16 +146,29 @@ function recDisplayPersons(person) {
 }
 
 // TODO add a (relative) path? callable from DOM element? return new DOM element?
-function generateUnorderedListItem(domElement, personTreeNode) {
+function applyListItemTemplate(personTreeNode) {
     const childsToDisplay = personTreeNode.childNodes;
     for (let cNode of childsToDisplay) {
-        const cData = childsData[cNode.jsonIndex];
-        log(cData);
-        domElement.innerHTML +=
-            `<li id=${cNode.jsonIndex} person=${cNode}>\
-            \    ${cData.name.first} \
-            \    ${cData.name.last} \
-            </li>`;
+        const cData = personsData[cNode.jsonIndex];
+        let personDisplay = document.createElement("person-display");
+        personDisplay.id = "person"+cNode.jsonIndex;
+        // personDisplay.setAttribute(cNode.jsonIndex); //TODO
+        // personDisplay.classList.add("nested");
+        personDisplay.innerHTML =
+            // `<div slot="id"></div>
+            // <span slot="first">${cData.name.first}</span>
+            // <span slot="last">${cData.name.last}</span>
+            // <a slot="script" class=>${JSON.stringify(cData)}</a>
+            // `;
+
+            //FIXME whole function
+            `<a slot="script" class=>${JSON.stringify(cData)}</a>`;
+
+        // `<li id=${cNode.jsonIndex} person=${cNode} classList="caret">\
+        // \    ${cData.name.first} \
+        // \    ${cData.name.last} \
+        // </li>`;
+        return personDisplay;
     }
 }
 
@@ -146,7 +192,7 @@ async function loadPersons(amount) {
             log("res",response);
         })
         .then( (json) => {
-            childsData = json.results;
+            personsData = json.results;
         }).catch(async () => {
             log("JSON file request : failed")
             await new Promise((resolve) => setTimeout(resolve, 1000));

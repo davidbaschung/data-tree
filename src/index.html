@@ -1,33 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-UK">
     <head>
         <title>Management builder</title>
+        <meta name="description" content="Single Page application with recursive node displays" />
         <link href="styles.css" rel="stylesheet" type="text/css" />
-        <link rel="icon" href="https://www.swisstxt.ch/favicon.gif" type="image/gif" />
-        <script src="app.js" ></script>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="darkred" />
+        <link  rel="icon" href="https://www.swisstxt.ch/favicon.gif" type="image/gif" />
+        <link rel="apple-touch-icon" href="https://www.swisstxt.ch/favicon.gif" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="app.js" async></script>
     </head>
-    <body onload="onPageLoaded()">
+    <body onload="onPageLoaded()" class="lazy-background">
         <div id="main">
             <h3>Hierarchical Organizational Chart Builder</h3>
             <div class="flex-container">
                 <small class="flex-comment">flex-container</small>
                 <div class="flex-row">
                     <span>Number of persons : </span>
-                    <input type="text" id="nbPersonsInput" onclick="this.value=''" onkeydown="nbPersonsInput(event, this.value)" autofocus style="width:2.5em" />
-                    <span>(max 5000)</span>
+                    <input type="text" id="nbPersonsInput" placeholder="0-5000" onclick="this.value=''" onkeydown="nbPersonsInput(event, this.value)" autofocus style="width:3em" />
+                    <small>(max 5000)</small>
                     <button onclick="createPersons($('nbPersonsInput').value)">Apply</button>
-                    <span id="loading" class="lightBox" hidden>Loading ...</span>
-                    <span id="alert" class="alertBox" hidden>Enter an integer smaller than 5000 ...</span>
+                    <span id="loading" class="light-box" hidden>Loading ...</span>
+                    <span id="alert" class="alert-box" hidden>Enter an integer smaller than 5000 ...</span>
                 </div>
-                <div class="flex-row">
-                    <ul id="tree"> 
-                        <span class="lightText">Results</span>
-                    </ul>
-
+                <div id="treeContainer" class="flex-row">
+                    <span class="light-text">Results</span>
                 </div>
             </div>
         </div>
+
+        <template id="person-display-template">
+            <link href="styles.css" rel="stylesheet" type="text/css" />
+            <style>
+                a { display:none }
+            </style>
+                <slot name="script" style="display:none"></slot>
+            <div id="mainDiv" class="person">
+                <div class="name-field">
+                    <!-- <slot name="first">First Name</slot>
+                    <slot name="last">Last Name</slot> -->
+                </div>
+                <span id="test-span"></span>
+            </div>
+            <slot name="script"></slot>
+            <script>
+                // let cData = document.getElementById("person-display-template").content.querySelector("a");
+                // console.log(cData);
+                console.log(document.getElementById("person-display-template").content.querySelector("#test-span"));
+                document.getElementById("person-display-template").content.querySelector("#test-span").innerHTML = "aaaaaa";
+                document.getElementById("person-display-template").content.querySelector("#test-span").draw();
+            </script>
+        </template>
 
     </body>
 </html>
