@@ -83,57 +83,7 @@ div.flex-row {
   background-color: rgb(255, 224, 184);
 }
 
-*.person {
-  width: fit-content;
-}
-
-*.name-field {
-  background-color : white;
-  
-}
-
-  
-
-
-/* TODO carets */
-
-/* Remove default bullets */
-ul, #myUL {
-  list-style-type: none;
-}
-
-/* Remove margins and padding from the parent ul */
 #tree {
   margin: 0;
   padding: 0;
-}
-
-/* Style the caret/arrow */
-.caret {
-  cursor: pointer;
-  user-select: none; /* Prevent text selection */
-}
-
-/* Create the caret/arrow with a unicode, and style it */
-.caret::before {
-  content: "\25B6";
-  color: blue;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-.caret-down::before {
-  transform: rotate(90deg);
-}
-
-/* Hide the nested list */
-.nested {
-  /* display: none; */
-  visibility:hidden;
-}
-
-/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
-.active {
-  display: block;
 }

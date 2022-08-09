@@ -8,8 +8,8 @@ function log(tag='', ...contents) {
     if (contents) {
         console.log(`${tag} (below) :`);
         for (content of contents) {
-            console.log(content);
             console.log();
+            console.log(content);
         }
     } else {
         if (tag)
@@ -28,6 +28,7 @@ function log(tag='', ...contents) {
 // let initialNbPersonsInput = 3;
 let personsData = [];   /* JSON data for every person */
 let randomTree = null;  /* random Tree composed with structural PersonTreeNodes */
+let initialNbPersonsInput = 3;
 // let domTree;            /* the HTML element with the "tree" ID */
 
 /*  onPageLoaded is called later */
@@ -44,21 +45,19 @@ customElements.define("person-display",
             super();
             const template = $("person-display-template").content;
             const shadowRoot = this.attachShadow({mode: 'open'});
-            shadowRoot.appendChild(template.cloneNode(true));
+            let newNode = template.cloneNode(true);
+            shadowRoot.appendChild(newNode);
         }
     }
 );
 
 document.addEventListener("DOMContentLoaded", () => {
     let lazyBackgroundElement = document.querySelector(".lazy-background");
-
     if ("IntersectionObserver" in window) {
         let lazyObserver = new IntersectionObserver( (entries, observer) => {
             entries.forEach( (entry) => {
                 if (entry.isIntersecting) {
-                    lazyBackgroundElement.classList.remove("lazy-background");
-                    lazyBackgroundElement.classList.add("background");
-                    // lazyObserver.unobserve( "no src in html" );
+                    // unloadPreloadedElements();
                 }
             });
         });
@@ -67,15 +66,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function onPageLoaded() {
-//     let lazyBackgroundElement = document.querySelector(".lazy-background");
-//     lazyBackgroundElement.classList.remove("lazy-background");
-//     lazyBackgroundElement.classList.add("background");
-//     // const perfData = window.performance.timing;
-//     // const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-//     // log("Page loaded. rendering time", pageLoadTime);
+    unloadPreloadedElements();
 //     // domTree = $('tree');
-//     // $('nbPersonsInput').value=initialNbPersonsInput;
+    if (initialNbPersonsInput != undefined) {
+        const input = $('nbPersonsInput');
+        input.value=initialNbPersonsInput;
+        input.dispatchEvent(new KeyboardEvent('keydown', {keyCode:13}));
+    }
 //     // createPersons(initialNbPersonsInput);
+}
+
+function unloadPreloadedElements() {
+    $('loading-image').remove();
+    let lazyBackgroundElement = document.querySelector(".lazy-background");
+    lazyBackgroundElement.classList.remove("lazy-background");
+    lazyBackgroundElement.classList.add("background");
 }
 
 /* generates a random full tree from a JSON array */
@@ -152,22 +157,12 @@ function applyListItemTemplate(personTreeNode) {
         const cData = personsData[cNode.jsonIndex];
         let personDisplay = document.createElement("person-display");
         personDisplay.id = "person"+cNode.jsonIndex;
-        // personDisplay.setAttribute(cNode.jsonIndex); //TODO
         // personDisplay.classList.add("nested");
         personDisplay.innerHTML =
-            // `<div slot="id"></div>
-            // <span slot="first">${cData.name.first}</span>
-            // <span slot="last">${cData.name.last}</span>
-            // <a slot="script" class=>${JSON.stringify(cData)}</a>
-            // `;
-
-            //FIXME whole function
-            `<a slot="script" class=>${JSON.stringify(cData)}</a>`;
-
-        // `<li id=${cNode.jsonIndex} person=${cNode} classList="caret">\
-        // \    ${cData.name.first} \
-        // \    ${cData.name.last} \
-        // </li>`;
+            `<a slot="id" id=${cNode.jsonIndex}></a>
+            <img slot="portrait" src="${cData.picture.large}" class="img" alt="portrait not found" />
+            <span slot="first">${cData.name.first}</span>
+            <span slot="last">${cData.name.last}</span>`;
         return personDisplay;
     }
 }
@@ -199,9 +194,7 @@ async function loadPersons(amount) {
             fetchFile();
         });
     }
-
     await fetchFile();
-
     $("loading").setAttribute("hidden",'');
 }
 
