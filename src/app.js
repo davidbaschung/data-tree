@@ -28,7 +28,7 @@ function log(tag='', ...contents) {
 // let initialNbPersonsInput = 3;
 let personsData = [];   /* JSON data for every person */
 let randomTree = null;  /* random Tree composed with structural PersonTreeNodes */
-let initialNbPersonsInput = 3;
+let initialNbPersonsInput = 100;
 // let domTree;            /* the HTML element with the "tree" ID */
 
 /*  onPageLoaded is called later */
@@ -50,6 +50,14 @@ customElements.define("person-display",
         }
     }
 );
+
+//TODO remove
+document.addEventListener("togglechildren", (customEvent) => {
+    log("customevent", customEvent)
+    log("id found",customEvent.detail.personID);
+    log("target", customEvent.target);
+    // recDisplayPersons
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     let lazyBackgroundElement = document.querySelector(".lazy-background");
@@ -103,9 +111,9 @@ function generatePersonsRandomTree(jsonArray) {
         const remainingPersons = jsonArray.length-jsonLowIndex;
         if (remainingPersons==0)
             return;
-        const randomNbChilds = Math.ceil(Math.random() * 5); /* breadth-first generating, up to 5 childs */
-        const nbChilds = Math.min(randomNbChilds, remainingPersons);
-        for (let i=nbChilds; i>0; i--) {
+        const randomNbchildren = Math.ceil(Math.random() * 5); /* breadth-first generating, up to 5 children */
+        const nbchildren = Math.min(randomNbchildren, remainingPersons);
+        for (let i=nbchildren; i>0; i--) {
             let child = new PersonTreeNode(currentPerson, jsonLowIndex++);
             // log("new child", jsonLowIndex, child, currentPerson);
             currentPerson.childNodes.push(child);
@@ -130,17 +138,35 @@ async function createPersons(amount) {
     // initialNbPersonsInput = amount;
     await loadPersons(amount);
     randomTree = generatePersonsRandomTree(personsData);
-    displayPersons();
+    const treeContainer = $("person0");
+    treeContainer.innerHTML = "";
+    treeContainer.appendChild(applyPersonTemplate(randomTree));
 }
 
-function displayPersons() {
-    $("treeContainer").innerHTML = "";
-    $("treeContainer").appendChild(applyListItemTemplate(randomTree));
-    recDisplayPersons(randomTree);
+function developChildren(personTreeNode, mustDisplay) {
+    const personContainer = $("person"+personTreeNode.jsonIndex);
+    if (mustDisplay) {
+        const newList = document.createElement("ul");
+        personContainer.appendChild(newList);
+        recDevelopChild(personTreeNode, [...personTreeNode.childNodes]);
+    } else {
+        const ul = document.querySelector(`#person${personTreeNode.jsonIndex} ul:first-of-type`);
+        if (ul)
+            ul.remove();
+    }
 }
 
-function recDisplayPersons(person) {
-
+function recDevelopChild(personTreeNode, children) {
+    if (children.length==0)
+        return;
+    const personContainer = document.querySelector(`#person${personTreeNode.jsonIndex}`);
+    const childNode = children.shift();
+    const childElement = applyPersonTemplate(childNode);
+    const listElement = document.createElement("li");
+    const unorderedList = personContainer.querySelector(`ul:first-of-type`);
+    unorderedList.appendChild(childElement);
+    personContainer.appendChild(listElement);
+    recDevelopChild(personTreeNode, children);
     // const firstPerson = persons[0];
     // for (key in firstPerson) {
     //     domTree.innerHTML += `<li>${key}</li>`;
@@ -150,21 +176,27 @@ function recDisplayPersons(person) {
     // TODO show DOM tree branches from random tree
 }
 
-// TODO add a (relative) path? callable from DOM element? return new DOM element?
-function applyListItemTemplate(personTreeNode) {
-    const childsToDisplay = personTreeNode.childNodes;
-    for (let cNode of childsToDisplay) {
-        const cData = personsData[cNode.jsonIndex];
-        let personDisplay = document.createElement("person-display");
-        personDisplay.id = "person"+cNode.jsonIndex;
-        // personDisplay.classList.add("nested");
-        personDisplay.innerHTML =
-            `<a slot="id" id=${cNode.jsonIndex}></a>
-            <img slot="portrait" src="${cData.picture.large}" class="img" alt="portrait not found" />
-            <span slot="first">${cData.name.first}</span>
-            <span slot="last">${cData.name.last}</span>`;
-        return personDisplay;
+function applyPersonTemplate(personTreeNode) {
+    // const childrenToDisplay = personTreeNode.childNodes;
+    // for (let cNode of childrenToDisplay) {
+    const cNode = personTreeNode; //TODO check
+    const cData = personsData[cNode.jsonIndex];
+    let personContainer = document.createElement("div");
+    personContainer.id = "person"+cNode.jsonIndex;
+    personContainer.isOpened = "false";
+    let personDisplay = document.createElement("person-display");
+    personDisplay.innerHTML = `
+        <img slot="portrait" src="${cData.picture.large}" class="img" alt="portrait not found" />
+        <span slot="first">${cData.name.first}</span>
+        <span slot="last">${cData.name.last}</span>`;
+    personDisplay.onclick = (event) => {
+        const isOpened = JSON.parse(personContainer.isOpened);
+        personContainer.isOpened = JSON.stringify(! isOpened);
+        developChildren(personTreeNode, ! isOpened );
     }
+    personContainer.appendChild(personDisplay);
+    return personContainer;
+    // }
 }
 
 async function loadPersons(amount) {
@@ -201,7 +233,6 @@ async function loadPersons(amount) {
 function nbPersonsInput($event, amount) {
     if ($event.keyCode==13)
         createPersons(amount);
-        //TODO directly in HTML ?
 }
 
 /* #endregion */

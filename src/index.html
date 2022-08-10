@@ -39,12 +39,13 @@
                     <span id="loading" class="light-box" hidden>Loading ...</span>
                     <span id="alert" class="alert-box" hidden>Enter an integer smaller than 5000 ...</span>
                 </div>
-                <div id="treeContainer" class="flex-row">
+                <div id="person0" class="flex-row">
                     <span class="light-text">Results</span>
                 </div>
             </div>
         </div>
 
+        <!-- self-note : templates are used for rendering. They are bad when using embedded scripts that must identify clones -->
         <template id="person-display-template">
             <head>
                 <link href="styles.css" rel="stylesheet" type="text/css" />
@@ -76,21 +77,16 @@
                     }
                 </style>
                 <script>
-                    function templateClicked(tag) {
-                        toggleCaretOpening(tag);
-                    }
                     function toggleCaretOpening(tag) {
                         caretTagClasslist = tag.querySelector(".caret-standard").classList;
-                        log(caretTagClasslist);
                         caretTagClasslist.contains("caret-opened")
                         ? caretTagClasslist.remove("caret-opened")
                         : caretTagClasslist.add("caret-opened");
                     }
                 </script>
-                <slot name="id">Person JSON ID</slot>
             </head>
             <body>
-                <div id="mainDiv" class="person" onclick="templateClicked(this)" >
+                <div id="mainDiv" class="person" onclick="toggleCaretOpening(this)" >
                     <slot name="portrait"><img alt="Portrait picture"></img></slot>
                     <div class="name-field">
                         <slot name="first">First Name</slot>
