@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-UK">
     <head>
-        <title>Management builder</title>
+        <title>Management Viewer</title>
         <meta name="description" content="Single Page application with recursive node displays" />
         <link rel="preload" as="image" type="image/png" imagesizes="50vw"
             href="https://simpleicon.com/wp-content/uploads/loading.png"
@@ -28,7 +28,7 @@
                 https://simpleicon.com/wp-content/uploads/loading-256x256.png 256w"
         />
         <div id="main">
-            <h3>Hierarchical Organizational Chart Builder</h3>
+            <h3>Hierarchical Organizational Chart Viewer</h3>
             <div class="flex-container">
                 <small class="flex-comment">flex-container</small>
                 <div class="flex-row">
@@ -39,62 +39,97 @@
                     <span id="loading" class="light-box" hidden>Loading ...</span>
                     <span id="alert" class="alert-box" hidden>Enter an integer smaller than 5000 ...</span>
                 </div>
-                <div id="person0" class="flex-row">
+                <ul id="treeContainer" class="flex-row">
                     <span class="light-text">Results</span>
-                </div>
+                </ul>
             </div>
         </div>
-
-        <!-- self-note : templates are used for rendering. They are bad when using embedded scripts that must identify clones -->
-        <template id="person-display-template">
-            <head>
-                <link href="styles.css" rel="stylesheet" type="text/css" />
-                <style>
-                    *.person {
-                        width: fit-content;
-                        border: 2px solid var(--maxRed);
-                        cursor: pointer;
-                        user-select: none;
-                    }
-                    ::slotted(img) {
-                        border-radius: var(--radius);
-                        width:10em;
-                    }
-                    *.name-field { background-color: white; }
-                    /* Hide the nested list */
-                    .nested {
-                    /* display: none; */
-                        visibility:hidden;
-                    }
-                    *.caret-standard::before {
-                        content: "\25B6";
-                        color: var(--maxRed);
-                        display: inline-block;
-                        margin-right: 6px;
-                    }
-                    *.caret-opened::before {
-                        transform: rotate(90deg);
-                    }
-                </style>
-                <script>
-                    function toggleCaretOpening(tag) {
-                        caretTagClasslist = tag.querySelector(".caret-standard").classList;
-                        caretTagClasslist.contains("caret-opened")
-                        ? caretTagClasslist.remove("caret-opened")
-                        : caretTagClasslist.add("caret-opened");
-                    }
-                </script>
-            </head>
-            <body>
-                <div id="mainDiv" class="person" onclick="toggleCaretOpening(this)" >
-                    <slot name="portrait"><img alt="Portrait picture"></img></slot>
-                    <div class="name-field">
-                        <slot name="first">First Name</slot>
-                        <slot name="last">Last Name</slot>
-                    </div>
-                    <div class="caret-standard">Team managed</span>
-                </div>
-            </body>
-        </template>
     </body>
+
+    
+    <!-- self-note : templates are used for rendering. They are bad when using embedded scripts that must identify clones -->
+    <template id="person-display-template">
+        <head>
+            <link href="styles.css" rel="stylesheet" type="text/css" />
+            <style>
+                *.person { /* ( *person, not :root, for variables ) */
+                    --animation-time: 0.25s;
+
+                    width: fit-content;
+                    border: 2px solid var(--maxRed);
+                    cursor: pointer;
+                    user-select: none;
+                }
+                ::slotted(img) {
+                    border-radius: var(--radius);
+                    width:10em;
+                }
+                *.name-field { background-color: whitesmoke; }
+                *.caret-standard::before {
+                    content: "\25B6";
+                    color: var(--maxRed);
+                    display: inline-block;
+                    margin-right: 6px;
+                    background-color: whitesmoke;
+                    border-radius: 50%;
+                    margin: 2px;
+                    width: 22px;
+                    height: 22px;
+                    line-height: 22px;
+                    text-align: center;
+                }
+                *.caret-opened::before {
+                    transform: rotate(90deg);
+                }
+                @keyframes open {
+                    from {
+                        transform: scale(0%);
+                        opacity: 0%;
+                    }
+                    to {
+                        transform: scale(100%);
+                        opacity:100%
+                    }
+                }
+                @keyframes close {
+                    from {
+                        transform: scale(100%);
+                        opacity:100%
+                    }
+                    to {
+                        transform: scale(0%);
+                        opacity: 0%;
+                    }
+                }
+                div {
+                    animation-name:open;
+                    animation-duration: var(--animation-time);
+                }
+                div.close {
+                    animation-name:close;
+                    animation-duration: var(--animation-time);
+                }
+            </style>
+            <script>
+                function toggleCaretOpening(tag) {
+                    let caret = tag.querySelector(".caret-standard");
+                    if (caret == null)
+                        return;
+                    let caretTagClasslist = caret.classList;
+                    caretTagClasslist.contains("caret-opened")
+                    ? caretTagClasslist.remove("caret-opened")
+                    : caretTagClasslist.add("caret-opened");
+                }
+            </script>
+        </head>
+        <body onload="log('loaded')">
+            <div id="mainDiv" class="person" onclick="toggleCaretOpening(this)" >
+                <slot name="portrait"><img alt="Portrait picture"></img></slot>
+                <div class="name-field">
+                    <slot name="person-name">Person Name</slot>
+                </div>
+                <div class="caret-standard">Team managed</span>
+            </div>
+        </body>
+    </template>
 </html>
