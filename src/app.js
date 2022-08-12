@@ -295,7 +295,7 @@ function focusTreeOnPerson(personTreeNode) {
     let stillScrolling;
     let classList = mainContainer.classList;
     let focusWithoutScroll_Timeout = setTimeout( () => { animate(); }, 100 );
-    mainContainer.addEventListener("scroll", ($event) => {
+    this.addEventListener("scroll", ($event) => {
         clearTimeout(focusWithoutScroll_Timeout);
         clearTimeout(stillScrolling);
         stillScrolling = setTimeout( () => { animate(); }, 100);
@@ -305,7 +305,7 @@ function focusTreeOnPerson(personTreeNode) {
         classList.remove("focus");
         transmitHighlight(mainContainer);
         classList.add("focus");
-        mainContainer.removeEventListener("scroll", ()=>{}, true);
+        this.removeEventListener("scroll", ()=>{}, true);
     }
 }
 
