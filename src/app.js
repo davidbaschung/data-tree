@@ -29,7 +29,8 @@ function log(tag='', ...contents) {
 
 let personsData = [];   /* JSON data for every person */
 let randomTree = null;  /* random Tree composed with structural PersonTreeNodes */
-let initialNbPersonsInput = 1000; /* The initial 
+const INITIAL_NB_PERSONS_INPUT = 100; /* The initial number of persons inputed */
+let currentlyHighlightedMainContainer; /* highlighted person */
 
 /*  onPageLoaded is called later */
 
@@ -55,8 +56,10 @@ async function createPersons(amount) {
     // initialNbPersonsInput = amount;
     await loadPersons(amount);
     randomTree = generatePersonsRandomTree(personsData);
-    const treeContainer = $("treeContainer");
+    let treeContainer = $("treeContainer");
+    let breadcrumbListContainer = $("breadcrumb-list");
     treeContainer.innerHTML = "";
+    breadcrumbListContainer.innerHTML = "";
     treeContainer.appendChild(applyPersonTemplate(randomTree));
 }
 
@@ -64,7 +67,7 @@ async function createPersons(amount) {
 async function loadPersons(amount) {
     $("loading").removeAttribute("hidden");
     async function fetchFile() {
-        let file = await fetch(
+        await fetch(
             `https://randomuser.me/api?results=${amount}`,
             {
                 method: 'GET',
@@ -94,7 +97,7 @@ async function loadPersons(amount) {
 
 /* Generates a random full tree of persons from a JSON array */
 function generatePersonsRandomTree(jsonArray) {
-    let t0 = performance.now();
+    const T_0 = performance.now();
     class PersonTreeNode {
         constructor(parent=null, index=0) {
             this.parentNode = parent;
@@ -108,23 +111,32 @@ function generatePersonsRandomTree(jsonArray) {
     let nodesBreadthQueue = [tree];
     while ( jsonLowIndex < jsonArray.length ) {
         let currentPerson = nodesBreadthQueue.shift();
-        const remainingPersons = jsonArray.length-jsonLowIndex;
-        if (remainingPersons==0)
+        const REMAINING_PERSONS = jsonArray.length-jsonLowIndex;
+        if (REMAINING_PERSONS==0)
             return;
-        const randomNbchildren = Math.ceil(Math.random() * 5); /* breadth-first generating, up to 5 children */
-        const nbchildren = Math.min(randomNbchildren, remainingPersons);
-        for (let i=nbchildren; i>0; i--) {
+        const RANDOM_NB_CHILDREN = Math.ceil(Math.random() * 5); /* breadth-first generating, up to 5 children */
+        const NB_CHILDREN = Math.min(RANDOM_NB_CHILDREN, REMAINING_PERSONS);
+        for (let i=NB_CHILDREN; i>0; i--) {
             let child = new PersonTreeNode(currentPerson, jsonLowIndex++);
             currentPerson.childNodes.push(child);
             nodesBreadthQueue.push(child);
         }
     }
-    let t1 = performance.now() - t0;
-    log(`generatePersonsRandomTree performance (ms) with ${jsonArray.length} users`, t1)
+    const T1 = performance.now() - T_0;
+    log(`generatePersonsRandomTree performance (ms) with ${jsonArray.length} users`, T1)
     return tree;
 }
 
-/*     endregion     */
+/* Recursively computes the absolute path for a given PersonTreeNode */
+function getPersonTreeNodesPathList(personTreeNode, currentPath=[]) {
+    const PARENT = personTreeNode.parentNode;
+    if (PARENT == null)
+        return [personTreeNode, ...currentPath];
+    currentPath.unshift(personTreeNode);
+    return getPersonTreeNodesPathList(PARENT, currentPath);
+}
+
+/*     #endregion     */
 
 
 
@@ -143,10 +155,10 @@ customElements.define("person-display",
     class extends HTMLElement {
         constructor(is) {
             super();
-            const template = $("person-display-template").content;
-            const shadowRoot = this.attachShadow({mode: 'open'});
-            let newNode = template.cloneNode(true);
-            shadowRoot.appendChild(newNode);
+            const TEMPLATE = $("person-display-template").content;
+            const SHADOW_ROOT = this.attachShadow({mode: 'open'});
+            let newNode = TEMPLATE.cloneNode(true);
+            SHADOW_ROOT.appendChild(newNode);
         }
     }
 );
@@ -158,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let lazyObserver = new IntersectionObserver( (entries, observer) => {
             entries.forEach( (entry) => {
                 if (entry.isIntersecting) {
-                    unloadPreloadedElements();
+                    // unloadPreloadedElements();
                 }
             });
         });
@@ -168,10 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* Creates and renders a person tree on body load */
 function onPageLoaded() {
-    // unloadPreloadedElements();
-    if (initialNbPersonsInput != undefined) {
-        const input = $('nbPersonsInput');
-        input.value=initialNbPersonsInput;
+    unloadPreloadedElements();
+    if (INITIAL_NB_PERSONS_INPUT != undefined) {
+        let input = $('nbPersonsInput');
+        input.value=INITIAL_NB_PERSONS_INPUT;
         input.dispatchEvent(new KeyboardEvent('keydown', {keyCode:13}));
     }
 }
@@ -186,23 +198,23 @@ function unloadPreloadedElements() {
 
 /* Develops and displays all the childs element on click */
 function developChildren(personTreeNode, mustDisplay) {
-    const personContainer = $("person"+personTreeNode.jsonIndex);
+    let personContainer = $("person"+personTreeNode.jsonIndex);
     if (mustDisplay) {
-        const newList = document.createElement("ul");
+        let newList = document.createElement("ul");
         personContainer.appendChild(newList);
         recDevelopChild(personTreeNode, [...personTreeNode.childNodes]);
     } else {
-        const ul = document.querySelector(`#person${personTreeNode.jsonIndex} ul:first-of-type`);
+        let ul = document.querySelector(`#person${personTreeNode.jsonIndex} ul:first-of-type`);
         if (ul) {
             for (li of document.querySelector(`#person${+personTreeNode.jsonIndex}`).querySelectorAll("ul li")) {
-                li.querySelector("div person-display").shadowRoot.querySelector("#mainDiv")
+                li.querySelector("person-display").shadowRoot.querySelector("#mainContainer")
                     .classList.add("close");
             }
-            const timeOut = parseFloat(
+            const TIME_OUT = parseFloat(
                 window.getComputedStyle($(`person0`).querySelector("person-display")
-                .shadowRoot.querySelector("#mainDiv")).getPropertyValue("--animation-time")
+                .shadowRoot.querySelector("#mainContainer")).getPropertyValue("--animation-time")
             ) * 1000;
-            setTimeout(() => {ul.remove()}, timeOut);
+            setTimeout(() => {ul.remove()}, TIME_OUT);
         }
     }
 }
@@ -211,46 +223,102 @@ function developChildren(personTreeNode, mustDisplay) {
 function recDevelopChild(personTreeNode, children) {
     if (children.length==0)
         return;
-    const personContainer = document.querySelector(`#person${personTreeNode.jsonIndex}`);
-    const childNode = children.shift();
-    const childElement = applyPersonTemplate(childNode);
-    const listElement = document.createElement("li");
-    listElement.appendChild(childElement);
-    const unorderedList = personContainer.querySelector(`ul:first-of-type`);
+    const PERSON_CONTAINER = document.querySelector(`#person${personTreeNode.jsonIndex}`);
+    const CHILD_NODE = children.shift();
+    const CHILD_ELEMENT = applyPersonTemplate(CHILD_NODE);
+    let listElement = document.createElement("li");
+    listElement.appendChild(CHILD_ELEMENT);
+    let unorderedList = PERSON_CONTAINER.querySelector(`ul:first-of-type`);
     unorderedList.appendChild(listElement);
     recDevelopChild(personTreeNode, children);
 }
 
 /* Applys the shadow template for one person's display */
 function applyPersonTemplate(personTreeNode) {
-    const nodeData = personsData[personTreeNode.jsonIndex];
+    const NODE_DATA = personsData[personTreeNode.jsonIndex];
     let personContainer = document.createElement("div");
     personContainer.id = "person"+personTreeNode.jsonIndex;
     personContainer.isOpened = "false";
     let personDisplay = document.createElement("person-display");
     personDisplay.innerHTML = `
         <a slot="hasChildren"></a>
-        <img slot="portrait" src="${nodeData.picture.large}" class="img" alt="portrait not found" />
-        <span slot="person-name">${nodeData.name.first} ${nodeData.name.last}</span>`;
-    let caretDiv = personDisplay.shadowRoot.querySelector("#mainDiv .caret-standard");
+        <img slot="portrait" src="${NODE_DATA.picture.medium}" class="img" alt="portrait not found" />
+        <span slot="person-name">${NODE_DATA.name.first} ${NODE_DATA.name.last}</span>`;
+    let caretDiv = personDisplay.shadowRoot.querySelector("#mainContainer .caret-standard");
     if ( personTreeNode.childNodes.length==0 )
         caretDiv.remove()
     let recNode = personTreeNode;
-    let personMainDiv = personDisplay.shadowRoot.querySelector("#mainDiv");
+    let personMainContainer = personDisplay.shadowRoot.querySelector("#mainContainer");
     let backgroundColor = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--default-person-background-color"));
     const i = 0x000D00 - 0x0D0000;
     while (recNode.parentNode!=null && backgroundColor+i<0xFFFFFF) {
         backgroundColor += i;
         recNode = recNode.parentNode;
     };
-    personMainDiv.setAttribute("style",`background-color:#${backgroundColor.toString(16)}`);
-    personMainDiv.onclick = (event) => {
-        const isOpened = JSON.parse(personContainer.isOpened);
-        personContainer.isOpened = JSON.stringify(! isOpened);
-        developChildren(personTreeNode, ! isOpened );
-    }
+    personMainContainer.setAttribute("style",`background-color:#${backgroundColor.toString(16)}`);
+    personMainContainer.addEventListener("mainDivClick", (event) => {
+        const IS_OPENED = JSON.parse(personContainer.isOpened);
+        personContainer.isOpened = JSON.stringify(! IS_OPENED);
+        developChildren(personTreeNode, ! IS_OPENED );
+        const NODES_LIST = getPersonTreeNodesPathList(personTreeNode);
+        updateBreadcrumbList(NODES_LIST);
+        transmitHighlight(personMainContainer);
+    }, false);
     personContainer.appendChild(personDisplay);
     return personContainer;
+}
+
+/* Displays the breadcrumb-list from an array of personTreeNodes */
+function updateBreadcrumbList(personTreeNodesPathList) {
+    let breadcrumbListContainer = $("breadcrumb-list");
+    breadcrumbListContainer.innerHTML = "";
+
+    for (personTreeNode of personTreeNodesPathList) {
+        let li = document.createElement("li");
+        let button = document.createElement("button");
+        button.personTreeNode = personTreeNode
+        button.onclick = (event) => {
+            focusTreeOnPerson(button.personTreeNode);
+        };
+        const NODE_DATA = personsData[personTreeNode.jsonIndex];
+        button.textContent = NODE_DATA.name.first + " " + NODE_DATA.name.last;
+        li.appendChild(button);
+        breadcrumbListContainer.appendChild(li);
+    }
+}
+
+/* Scrolls and focuses on one given person. Launched from a breadcrumb-list button */
+function focusTreeOnPerson(personTreeNode) {
+    let personDisplay = document.querySelector(`#person${personTreeNode.jsonIndex} person-display`);
+    let mainContainer = personDisplay.shadowRoot.querySelector('#mainContainer');
+    mainContainer.scrollIntoView({behavior:"smooth"});
+    let stillScrolling;
+    let classList = mainContainer.classList;
+    let focusWithoutScroll_Timeout = setTimeout( () => { animate(); }, 100 );
+    mainContainer.addEventListener("scroll", ($event) => {
+        clearTimeout(focusWithoutScroll_Timeout);
+        clearTimeout(stillScrolling);
+        stillScrolling = setTimeout( () => { animate(); }, 100);
+    });
+
+    function animate() {
+        classList.remove("focus");
+        transmitHighlight(mainContainer);
+        classList.add("focus");
+        mainContainer.removeEventListener("scroll", ()=>{}, true);
+    }
+}
+
+/* Removes the highlight from the last hightlighted person and sets a new one */
+function transmitHighlight(mainContainer) {
+    mainContainer.classList.remove("open")
+    mainContainer.classList.remove("highlight");
+    if (currentlyHighlightedMainContainer) {
+        currentlyHighlightedMainContainer.classList.remove("focus");
+        currentlyHighlightedMainContainer.classList.remove("highlight");
+    }
+    mainContainer.classList.add("highlight");
+    currentlyHighlightedMainContainer = mainContainer;
 }
 
 /*     #endregion     */

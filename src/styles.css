@@ -54,7 +54,7 @@ div {
   padding: 1px;
 }
 
-small {
+small, *.narrow {
   margin: 0px;
   padding: 0px;
 }
@@ -92,4 +92,23 @@ small {
 
 li {
   list-style:none;
+}
+
+ul.breadcrumb-list>li {
+  display:inline;
+}
+
+input, button {
+  border-color: var(--maxRed);
+  background-color: white;
+  border-radius: 5px;
+}
+
+[inline-block-top] {
+    display:inline-block;
+    vertical-align:top;
+}
+
+[bold] {
+  font-weight:bold
 }
