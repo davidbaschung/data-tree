@@ -186,11 +186,12 @@ function onPageLoaded() {
         input.value=INITIAL_NB_PERSONS_INPUT;
         input.dispatchEvent(new KeyboardEvent('keydown', {keyCode:13}));
     }
+    $("moving-header").setAttribute("hidden","true");
 }
 
 /* Removes the DOM elements to unload */
 function unloadPreloadedElements() {
-    $('loading-image').remove();
+    // $('loading-image').remove(); // (Deactivated in HTML)
     let lazyBackgroundElement = document.querySelector(".lazy-background");
     lazyBackgroundElement.classList.remove("lazy-background");
     lazyBackgroundElement.classList.add("background");
@@ -256,7 +257,7 @@ function applyPersonTemplate(personTreeNode) {
         recNode = recNode.parentNode;
     };
     personMainContainer.setAttribute("style",`background-color:#${backgroundColor.toString(16)}`);
-    personMainContainer.addEventListener("mainDivClick", (event) => {
+    personMainContainer.addEventListener("personClick", (event) => {
         const IS_OPENED = JSON.parse(personContainer.isOpened);
         personContainer.isOpened = JSON.stringify(! IS_OPENED);
         developChildren(personTreeNode, ! IS_OPENED );
@@ -291,6 +292,7 @@ function updateBreadcrumbList(personTreeNodesPathList) {
 function focusTreeOnPerson(personTreeNode) {
     let personDisplay = document.querySelector(`#person${personTreeNode.jsonIndex} person-display`);
     let mainContainer = personDisplay.shadowRoot.querySelector('#mainContainer');
+    
     mainContainer.scrollIntoView({behavior:"smooth"});
     let stillScrolling;
     let classList = mainContainer.classList;
@@ -320,5 +322,42 @@ function transmitHighlight(mainContainer) {
     mainContainer.classList.add("highlight");
     currentlyHighlightedMainContainer = mainContainer;
 }
+
+this.addEventListener("scroll", ($event) => {
+    // log("style", $("breadcrumb-list").getBoundingClientRect());
+    // let breadcrumbList = $("breadcrumb-list-container");
+    let headerElements = document.querySelectorAll("[headerElement]");
+    let firstHeaderElement = headerElements[0];
+    if (
+        firstHeaderElement.getBoundingClientRect().top <= 0
+        && ! firstHeaderElement.classList.contains("fixed")
+        ) {
+            $("moving-header").removeAttribute("hidden");
+            let headerElements = document.querySelectorAll("[headerElement]");
+            let headerElementsHeight = 0;
+            for (el of headerElements) {
+                elRect = el.getBoundingClientRect();
+                el.initialTop = elRect.top;
+                el.headerTop = headerElementsHeight;
+                headerElementsHeight += elRect.height;
+            }
+            $("moving-header").style.height = headerElementsHeight+5+"px";
+            for (el of headerElements) {
+                el.classList.add("fixed");
+                el.style.top = el.headerTop+"px";
+            }
+    }
+    if (
+        window.scrollY <= firstHeaderElement.initialTop
+        && firstHeaderElement.classList.contains("fixed")
+        ) {
+            $("moving-header").setAttribute("hidden","");
+            for (el of headerElements) {
+                el.classList.remove("fixed");
+                el.style.top = el.initialTop+"px";
+            }
+    }
+    
+});
 
 /*     #endregion     */

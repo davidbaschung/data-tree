@@ -1,6 +1,7 @@
 :root {
   --default-person-background-color : 0xFF6644;
-  --maxRed: orangered;
+  --maxOrange: orangered;
+  --background: rgb(255, 224, 184);
   --border-thickness: 3px;
   --radius: 0.5em;
 }
@@ -24,6 +25,24 @@ body {
   visibility: hidden;
 }
 
+#moving-header {
+  position:fixed;
+  top: 0%;
+  left: 0%;
+  z-index: 10;
+  width: 100%;
+  border-bottom: 2px solid var(--maxOrange);
+  background: linear-gradient( var(--maxOrange), lightgoldenrodyellow);
+  border-radius: 0px;
+}
+
+#moving-header #top-button {
+  width: 100%;
+  color:white;
+  text-align:center;
+  cursor: pointer;
+}
+
 span {
   border-radius: var(--radius);
   padding: 5px;
@@ -45,7 +64,7 @@ h1, h2, h3 {
   color : brown;
   border: var(--border-thickness) solid brown;
   border-radius: var(--radius);
-  background-color: var(--maxRed);
+  background-color: var(--maxOrange);
   padding: 10px;
 }
 
@@ -64,7 +83,7 @@ small, *.narrow {
 }
 
 *.flex-comment {
-    color: var(--maxRed);
+    color: var(--maxOrange);
 }
 
 *.flex-container {
@@ -72,7 +91,7 @@ small, *.narrow {
   flex-flow: column wrap;
   justify-content: flex-start;
   row-gap: 0.5em;
-  border: var(--border-thickness) solid var(--maxRed);
+  border: var(--border-thickness) solid var(--maxOrange);
   background: linear-gradient(lightsalmon, orange);
   margin: 0px;
 }
@@ -81,8 +100,9 @@ small, *.narrow {
   flex: 1;
   margin-left:0.3em;
   margin-right:0.3em;
-  background-color: rgb(255, 224, 184);
+  background-color: var(--background);
   border-radius: var(--radius);
+  max-width: 100%;
 }
 
 #treeContainer {
@@ -94,12 +114,20 @@ li {
   list-style:none;
 }
 
-ul.breadcrumb-list>li {
+#breadcrumb-list-container, #treeContainer {
+  max-width: 99%;
+  overflow-x: scroll;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+ul.breadcrumb-list > li {
+  max-width:99%;
   display:inline;
 }
 
 input, button {
-  border-color: var(--maxRed);
+  border-color: var(--maxOrange);
   background-color: white;
   border-radius: 5px;
 }
@@ -111,4 +139,9 @@ input, button {
 
 [bold] {
   font-weight:bold
+}
+
+*.fixed {
+  z-index : 99;
+  position: fixed;
 }
