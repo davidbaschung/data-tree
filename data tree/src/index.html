@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en-UK">
+    <head>
+        <title>Management Viewer</title>
+        <meta name="description" content="Single Page application with recursive node displays" />
+        <!-- <link rel="preload" as="image" type="image/png" imagesizes="50vw"
+            href="https://simpleicon.com/wp-content/uploads/loading.png"
+            imagesrcset="
+                https://simpleicon.com/wp-content/uploads/loading-64x64.png 64w,
+                https://simpleicon.com/wp-content/uploads/loading-128x128.png 128w,
+                https://simpleicon.com/wp-content/uploads/loading-150x150.png 150w,
+                https://simpleicon.com/wp-content/uploads/loading-256x256.png 256w"
+        /> -->
+        <!-- (Problem : blocks the whole page when not loading properly) -->
+
+        <link rel="icon" fetchpriority="high" href="https://www.swisstxt.ch/favicon.gif" type="image/gif" />
+        <link rel="apple-touch-icon" fetchpriority="low" href="https://www.swisstxt.ch/favicon.gif" />
+        <link href="styles.css" rel="stylesheet" type="text/css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" loading="lazy" content="darkred" />
+        <script src="app.js" async></script>
+    </head>
+    <body onload="onPageLoaded()" class="lazy-background">
+        <!-- <img id="loading-image" alt="loading..."  sizes="50vw"
+            src="http://simpleicon.com/wp-content/uploads/loading.png"
+            imagesrcset="
+                https://simpleicon.com/wp-content/uploads/loading-64x64.png 64w ,
+                https://simpleicon.com/wp-content/uploads/loading-128x128.png 128w,
+                https://simpleicon.com/wp-content/uploads/loading-150x150.png 150w,
+                https://simpleicon.com/wp-content/uploads/loading-256x256.png 256w"
+        />
+        <div id="main"> -->
+            <h3 id="title">Hierarchical Organizational Chart Viewer</h3>
+            <div class="flex-container">
+                <small class="flex-comment">flex-container</small>
+                <div id="moving-header">
+                    <div id="top-button" onclick="window.scrollTo({top:0})" headerElement>&#9650 Go to top</div>
+                </div>
+                <div class="flex-row">
+                    <span>Number of persons : </span>
+                    <input type="text" id="nbPersonsInput" placeholder="0-5000" onkeydown="nbPersonsInput(event, this.value)" autofocus style="width:3em" />
+                    <small>(max 5000)</small>
+                    <button onclick="createPersons($('nbPersonsInput').value)">Apply</button>
+                    <span id="loading" class="light-box" hidden>Loading ...</span>
+                    <span id="alert" class="alert-box" hidden>Enter an integer smaller than 5000 ...</span>
+                </div>
+                <div id="breadcrumb-list-container" class="flex-row" headerElement>
+                    <span bold style="color:var(--maxOrange)">></span>
+                    <ul style="display:inline" id="breadcrumb-list" class="light-text narrow breadcrumb-list">
+                        Path to current person
+                    </ul>
+                </div>
+                <ul id="treeContainer" class="flex-row">
+                    <span class="light-text">Results</span>
+                </ul>
+            </div>
+        </div>
+    </body>
+
+    
+    <!-- self-note : templates are used for rendering. They are bad when using embedded scripts that must identify clones -->
+    <template id="person-display-template">
+        <head>
+            <link href="styles.css" rel="stylesheet" type="text/css" />
+            <style>
+                #mainContainer {
+                    scroll-margin-top: 100px;
+                }
+                *.person { /* ( *person, not :root, for variables ) */
+                    --animation-time: 0.25s;
+
+                    width: fit-content;
+                    border: 2px solid var(--maxOrange);
+                    cursor: pointer;
+                    user-select: none;
+                }
+                ::slotted(img) {
+                    border-radius: var(--radius);
+                    width:3.5em;
+                }
+                *.name-field { background-color: whitesmoke; }
+                *.caret-standard::before {
+                    content: "\25B6";
+                    color: var(--maxOrange);
+                    display: inline-block;
+                    margin-right: 6px;
+                    background-color: whitesmoke;
+                    border-radius: 50%;
+                    margin: 2px;
+                    width: 22px;
+                    height: 22px;
+                    line-height: 22px;
+                    text-align: center;
+                }
+                *.caret-opened::before {
+                    transform: rotate(90deg);
+                }
+                *.open {
+                    animation-name:open;
+                    animation-duration: var(--animation-time);
+                }
+                *.close {
+                    animation-name:close;
+                    animation-duration: var(--animation-time);
+                }
+                *.highlight {
+                    outline: 3px solid white;
+                    box-shadow: 0 0 15px white, 0 0 15px white, 0 0 15px white, 0 0 15px white, 0 0 15px white;
+                    margin-top: 0.75em;;
+                    margin-bottom: 0.75em;
+                }
+                *.bubbled-parent {
+                    outline: 1px solid red;
+                    box-shadow: 0 0 15px red, 0 0 15px red;
+                }
+                *.bubbled {
+                    outline: 1px solid gold;
+                    box-shadow: 0 0 15px gold, 0 0 15px gold;
+                }
+                *.bubbled-child {
+                    outline: 1px solid yellowgreen;
+                    box-shadow: 0 0 15px yellowgreen, 0 0 15px yellowgreen;
+                }
+                *.focus {
+                    animation-name:focus;
+                    animation-duration:0.6s;
+                }
+                @keyframes open {
+                    from {
+                        transform: scale(0%);
+                        opacity: 0%;
+                    }
+                    to {
+                        transform: scale(100%);
+                        opacity:100%
+                    }
+                }
+                @keyframes close {
+                    from {
+                        transform: scale(100%);
+                        opacity:100%
+                    }
+                    to {
+                        transform: scale(0%);
+                        opacity: 0%;
+                    }
+                }
+                @keyframes focus {
+                    0%, 32%, 67%, 100% { opacity: 100% }
+                    16%, 50%, 83% { opacity: 0% }
+                }
+            </style>
+            <script>
+                function toggleCaretOpening(tag) {
+                    tag.dispatchEvent(new Event("personClick"));
+                    let caret = tag.querySelector(".caret-standard");
+                    if (caret == null)
+                        return;
+                    let caretTagClasslist = caret.classList;
+                    caretTagClasslist.contains("caret-opened")
+                    ? caretTagClasslist.remove("caret-opened")
+                    : caretTagClasslist.add("caret-opened");
+                }
+            </script>
+        </head>
+        <body>
+            <div id="mainContainer" class="person open" onclick="toggleCaretOpening(this)" >
+                <slot name="portrait"><img alt="Portrait picture"></img></slot>
+                <span inline-block-top>
+                    <div class="name-field">
+                        <slot name="person-name">Person Name</slot>
+                    </div>
+                    <div  class="caret-standard">Team managed</div>
+                </span>
+            </div>
+        </body>
+    </template>
+</html>

@@ -1,0 +1,146 @@
+:root {
+  --maxOrange: orangered;
+  --background: rgb(255, 224, 184);
+  --border-thickness: 3px;
+  --radius: 0.5em;
+}
+
+*.lazy-background {
+  background-image: url("http://s3.amazonaws.com/pix.iemoji.com/images/emoji/apple/ios-12/256/volcano.png");
+}
+
+*.background {
+  /* best case : use videos/images CDN */
+  background-image: url("https://wallpapershome.com/images/pages/pic_h/558.jpg");
+  background-size: auto;
+}
+
+body {
+  font-family: "Arial";
+  font-display: fallback;
+}
+
+*[hidden] {
+  visibility: hidden;
+}
+
+#moving-header {
+  position:fixed;
+  top: 0%;
+  left: 0%;
+  z-index: 10;
+  width: 100%;
+  border-bottom: 2px solid var(--maxOrange);
+  background: linear-gradient( var(--maxOrange), lightgoldenrodyellow);
+  border-radius: 0px;
+}
+
+#moving-header #top-button {
+  width: 100%;
+  color:white;
+  text-align:center;
+  cursor: pointer;
+}
+
+span {
+  border-radius: var(--radius);
+  padding: 5px;
+}
+
+*.light-box {
+  color: darkgrey;
+  background-color: rgb(240, 240, 240);
+  border: 1px solid darkgrey;
+}
+
+*.alert-box {
+  color: red;
+  background-color: rgb(255, 217, 222);
+  border: 1px solid darkred;
+}
+
+h1, h2, h3 {
+  color : brown;
+  border: var(--border-thickness) solid brown;
+  border-radius: var(--radius);
+  background-color: var(--maxOrange);
+  padding: 10px;
+}
+
+div {
+  border-radius: var(--radius);
+  padding: 1px;
+}
+
+small, *.narrow {
+  margin: 0px;
+  padding: 0px;
+}
+
+*.light-text {
+    color: lightslategray;
+}
+
+*.flex-comment {
+    color: var(--maxOrange);
+}
+
+*.flex-container {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  row-gap: 0.5em;
+  border: var(--border-thickness) solid var(--maxOrange);
+  background: linear-gradient(lightsalmon, orange);
+  margin: 0px;
+}
+
+*.flex-row {
+  flex: 1;
+  margin-left:0.3em;
+  margin-right:0.3em;
+  background-color: var(--background);
+  border-radius: var(--radius);
+  max-width: 100%;
+}
+
+#treeContainer {
+  margin: 1px;
+  padding: 1px;
+}
+
+li {
+  list-style:none;
+}
+
+#breadcrumb-list-container, #treeContainer {
+  max-width: 99%;
+  overflow-x: scroll;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+ul.breadcrumb-list > li {
+  max-width:99%;
+  display:inline;
+}
+
+input, button {
+  border-color: var(--maxOrange);
+  background-color: white;
+  border-radius: 5px;
+}
+
+[inline-block-top] {
+    display:inline-block;
+    vertical-align:top;
+}
+
+[bold] {
+  font-weight:bold
+}
+
+*.fixed {
+  z-index : 99;
+  position: fixed;
+}
