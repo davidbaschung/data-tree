@@ -1,25 +1,20 @@
 <template>
     <div id="grid-section">
-        <div v-show="false" v-for="x in $store.state.test" :key="x.a" class="person-card">
-            <!-- TODO question JSON key -->
+        <div v-if="false">
             <div>some store number : {{ $store.state.someNumber }}</div>
             <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
             <div>some number imported from props : {{ importedNumber }}</div> <!--(using mapState)-->
-        </div>
-        <div v-if="false" style="background-color: red;">
             persons test : {{ $store.getters.printPersons }}
             <br>
             persons test : {{ printPersons }}
         </div>
-        <div v-for="(person, index) in persons.filter((person) => {return filter(person)})" :key="index" class="person-card">
-            <!-- <div v-if=" () => {
-                $store.mutations.setCurrentlyFilteredPersonIndex(index);
-                return false;
-            }"> -->
-            <!-- TODO question getter with parameter / getter for array elements in JSON? -->
-                <img :src="person.picture.medium" />
-                <p>{{ $store.getters.name }}</p>
-            <!-- </div> -->
+        <div v-show="isLoading">
+            <div class="person-card" :style="this.$data.disabled">
+                Loading persons cards...
+            </div>
+        </div>
+        <div v-for="(p, index) in filteredPersons" :key="index" class="person-card">
+            <person-card :person="p"></person-card>
         </div>
     </div>
 </template>
@@ -27,9 +22,13 @@
 <script>
     import * as Utils from '../utils.js'
     import { mapState, mapGetters } from 'vuex'
+    import PersonCard from "./PersonCard.vue"
     export default {
         name: 'GridSection',
         props: ['importedNumber'],
+        components: {
+             'person-card': PersonCard
+        },
         computed: {
             ...mapState([
                 "someNumber",
@@ -37,18 +36,43 @@
             ]),
             ...mapGetters([
                 "printPersons"
-            ])
-        },
-        methods: {
-            // TODO question centralize data for filtering in store
-            filter(person) {
-                return person.dob.age > 45;
+            ]),
+            filteredPersons() {
+                // console.log("persons",persons);
+                console.log("store persons", this.$store.state.persons);
+                return this.$store.state.persons;//.filter((p) => {return p.dob.age < 45;})
             }
         },
         data() {
             return {
-                t: this.$store.state.test,
+                isLoading: true,
+                disabled : {
+                    'background-color': 'darkgray',
+                    'border' : '5px solid gray'
+                }
             }
+        },
+        watch: {
+            // '$store.state.persons': {
+            //     handler: (newPersons) => {
+            //         console.log("isLoading",this.$data.isLoading);
+            //         this.$data.isLoading=false;
+            //     },
+            //     immediate: true
+            // }
+            '$store.state.persons' (x) {
+                this.$data.isLoading=false;
+            }
+        },
+        methods: {
+            // filterPerson(person) {
+            //     return person.dob.age <  45;
+            // },
+            // filteredPersons(persons) {
+            //     console.log("persons",persons);
+            //     console.log("store persons", this.$store.state.persons);
+            //     return this.$store.state.persons;//.filter((person) => {return (p) => {return p.dob.age < 45;}})
+            // }
         },
         updated() {
             // Utils.default.fetchPersons(10, $store.mutations.updatePersons);

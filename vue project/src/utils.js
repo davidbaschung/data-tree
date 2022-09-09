@@ -23,7 +23,7 @@ function log(tag='', ...contents) {
     }
 }
 
-async function fetchPersons(amount, storageFunction) {
+async function fetchPersons(amount) {
     async function fetchFile() {
         return fetch(
             `https://randomuser.me/api?results=${amount}`,
@@ -40,7 +40,6 @@ async function fetchPersons(amount, storageFunction) {
                 log("JSON file request : bad answer");
         })
         .then( (json) => {
-            storageFunction(json.results);
             return json.results;
         })
         .catch(async () => {
@@ -49,7 +48,7 @@ async function fetchPersons(amount, storageFunction) {
             return fetchFile();
         }); 
     }
-    var x = await fetchFile();
-    console.log("x",x);
-    return x;
+    var fetchedFile = await fetchFile();
+    console.log("fetched File", fetchedFile);
+    return fetchedFile;
 }

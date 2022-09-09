@@ -26,7 +26,6 @@
                     <input id="maxAgeInput" class="max-input" type="range" min="0" max="100" v-model="maxAge" @input="ageChange('maxAgeInput', minAge, false)">
                 </div>
             </div>
-            <!-- TODO question ref this -->
         </div>
     </div>
 </template>

@@ -21,10 +21,9 @@ let store = new Vuex.Store({
     // persons: Utils.default.fetchPersons(10).then(
     //   (resolve)=> {return resolve}
     // ),
-
-    // persons: Utils.default.fetchPersons;
+    persons: [],
     // persons: [],
-    persons: json.results,
+    // persons: json.results,
     cities: ['Bienne','Berne','Madrid'],
     test: [
       {
@@ -38,8 +37,8 @@ let store = new Vuex.Store({
     ]
   },
   getters: {
-    citiesSentence(state) {
-      return "The people live in the cities of " + state.cities.join(' ');
+    citiesSentence() {
+      return "The people live in the cities of " + store.state.cities.join(' ');
     },
     printPersons() {
       // console.log(this.state.persons);
@@ -52,19 +51,9 @@ let store = new Vuex.Store({
     testGetter() {
       return "testGetter";
     },
-    name() {
-      // var name = store.state.persons[store.state.currentlyFilteredPersonIndex].name;
-      return "name getter"
-    }
   },
   mutations: {
-    // TODO question good or not
-    // TODO question TS
-    setCurrentlyFilteredPersonIndex(index) {
-      console.log(index);
-      store.state.currentlyFilteredPersonIndex;
-    },
-    updatePersons(persons) {
+    updatePersons(persons) { // TODO keep?
       store.state.persons = persons;
     }
   },
@@ -75,15 +64,8 @@ let app = new Vue({
   el:'#app',
   store,
   render: h => h(App, {props: {name:'test'  /* :this.fetchPersons(10) */}}),
-  created() {
-    // var x = 
-
-    // Utils.default.fetchPersons(10, store.mutations.updatePersons);
-
-
-    // store.mutations.updatePersons(
-    //   Utils.default.fetchPersons(10, store.mutations.updatePersons)
-    // )
+  beforeCreate() {
+    Utils.default.fetchPersons(10).then((p)=>{store.state.persons=p});
   },
 });
 app.$mount('#app');

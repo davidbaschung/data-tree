@@ -1,8 +1,9 @@
 <template>
   <div id="app">
    <!-- :persons="persons"> -->
-    <SelectorSection></SelectorSection>
-    <GridSection :importedNumber="$store.state.someNumber"></GridSection>
+    <selector-section></selector-section>
+    <grid-section :importedNumber="$store.state.someNumber"></grid-section>
+    <!-- TODO object with filter settings as prop -->
   </div>
 </template>
 
@@ -14,9 +15,14 @@
   export default {
     name: 'App',
     components: {
-      SelectorSection,
-      GridSection
+      'selector-section' : SelectorSection,
+      'grid-section' : GridSection
     },
+    data() {
+      return {
+
+      }
+    }
   }
 </script>
 
