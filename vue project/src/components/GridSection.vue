@@ -1,5 +1,5 @@
 <template>
-    <div id="grid-section">
+    <div id="grid-section" class="flex">
         <div v-if="false">
             <div>some store number : {{ $store.state.someNumber }}</div>
             <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
@@ -8,48 +8,40 @@
             <br>
             persons test : {{ printPersons }}
         </div>
-        <div v-show="isLoading">
-            <div class="person-card" :style="this.$data.disabled">
-                Loading persons cards...
+        <div v-show="isLoading" v-for="i in 3" :key="i+'someSalt'" class="flex">
+            <div class="person-card" :style="disabledStyles(i)">
+                Loading...
             </div>
         </div>
-        <div v-for="(p, index) in filteredPersons" :key="index" class="person-card">
+        <div v-for="(p, index) in persons" :key="index">
             <person-card :person="p"></person-card>
         </div>
     </div>
 </template>
 
 <script>
-    import * as Utils from '../utils.js'
     import { mapState, mapGetters } from 'vuex'
     import PersonCard from "./PersonCard.vue"
     export default {
-        name: 'GridSection',
-        props: ['importedNumber'],
+        name: 'grid-section',
+        props: [
+            'persons'
+        ],
         components: {
              'person-card': PersonCard
         },
         computed: {
             ...mapState([
                 "someNumber",
-                "persons"
             ]),
             ...mapGetters([
                 "printPersons"
             ]),
-            filteredPersons() {
-                // console.log("persons",persons);
-                console.log("store persons", this.$store.state.persons);
-                return this.$store.state.persons;//.filter((p) => {return p.dob.age < 45;})
-            }
         },
         data() {
             return {
                 isLoading: true,
-                disabled : {
-                    'background-color': 'darkgray',
-                    'border' : '5px solid gray'
-                }
+                loadStart: Date,
             }
         },
         watch: {
@@ -60,19 +52,42 @@
             //     },
             //     immediate: true
             // }
+            
+            // 'persons': {
+            //     handler: function (newValue, oldValue) {
+            //         console.log("new persons : ", newValue);
+            //     },
+            //     deep: true,
+            // },
             '$store.state.persons' (x) {
-                this.$data.isLoading=false;
-            }
+                this.isLoading=false;
+            },
+            // filterBy : {
+            //     handler: function (value) {
+            //         this.updateFilters();
+            //     },
+            //     deep: true
+            // },
         },
         methods: {
-            // filterPerson(person) {
-            //     return person.dob.age <  45;
-            // },
-            // filteredPersons(persons) {
-            //     console.log("persons",persons);
-            //     console.log("store persons", this.$store.state.persons);
-            //     return this.$store.state.persons;//.filter((person) => {return (p) => {return p.dob.age < 45;}})
-            // }
+            disabledStyles(index) {
+                let start = new Date();
+                console.log("Loading started at : " + start);
+                let opacity = Math.pow(0.6, index);
+
+                return {
+                    'opacity' : opacity,
+                    'background-color': 'darkgray',
+                    'border' : '5px solid gray',
+                    'display' : 'flex',
+                    'justify-content' : 'center',
+                    'align-items' : 'center',
+                    'width' : '7em',
+                    'height' : '7em',
+                    'font-weight' : 'bold',
+                    'color' : 'white',
+                }
+            },
         },
         updated() {
             // Utils.default.fetchPersons(10, $store.mutations.updatePersons);
@@ -82,18 +97,15 @@
 
 <style lang="scss">
     div {
+        .flex {
+            display: flex
+        }
         #grid-section {
-            display: flex;
             flex-wrap: wrap;
         }
-        &.person-card {
-            border-radius:13px;
-            background-color: yellowgreen;
-            margin: 0.5em;
-            padding: 0.5em;
-            border: 5px solid green;
-            min-width: 10em;
-            height: 10em;
-        }
+    }
+
+    img {
+        border-radius: 3px;
     }
 </style>
