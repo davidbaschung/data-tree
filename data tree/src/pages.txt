@@ -1,0 +1,10 @@
+Cards library. Details developable, with transition
+(Could develop "similar objects" section, recursively)
+Checkout form, send data to server.
+
+
+Hooks
+lifecycle
+view at scss files
+and saas
+etienne pache
