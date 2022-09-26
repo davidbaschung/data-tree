@@ -97,6 +97,9 @@
 
 <style lang="scss">
     div {
+        // font-family: Arial, Helvetica, sans-serif;
+        // font-size: 10pt;
+
         .flex {
             display: flex
         }

@@ -77,7 +77,5 @@ export default {
 <style>
 * {
 	margin: 0px;
-	/* font-family: Arial, Helvetica, sans-serif; */
-	/* font-size-adjust:75% */
 }
 </style>

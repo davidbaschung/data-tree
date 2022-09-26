@@ -27,7 +27,13 @@
                 </div>
             </div>
         </div>
-        <double-range-slider :minValue="0" :maxValue="100" minLabel="0" maxLabel="100" :dataArray="personsAgeList" :interval="10"></double-range-slider>
+        <double-range-slider
+            :minValue="0" :maxValue="100" minLabel="0" maxLabel="100"
+            :dataArray="personsAgeList" :interval="10"
+            @lowValue="lowValueHandler" @highValue="highValueHandler"
+        ></double-range-slider>
+        <!-- </double-range-slider>@input="ageChange('maxAgeInput', filterBy.minAge, false)" -->
+        
     </div>
 </template>
 
@@ -68,8 +74,8 @@ import DoubleRangeSlider from './DoubleRangeSlider.vue';
         },
     },
     methods: {
-        onChange() {
-            console.log("city", this.$store.state.persons);
+        onChange(values) {
+            console.log("change : ", values);
         },
         ageChange(callerRangeinputTag, rangeLimit, isMaximumTest) {
             var callerRangeinput = document.getElementById(callerRangeinputTag);
@@ -93,6 +99,12 @@ import DoubleRangeSlider from './DoubleRangeSlider.vue';
             // }
             // test();
         },
+        lowValueHandler(value) {
+            this.minAge = value;
+        },
+        highValueHandler(value) {
+            this.maxAge = value;
+        }
     },
     created() {
         this.updateFilters();

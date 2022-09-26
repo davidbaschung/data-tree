@@ -1,5 +1,5 @@
 <template>
-    <div class="main" @mousedown="sliderMousedown($event)" @mousemove="sliderDrag($event)" @mouseup="sliderMouseup($event)" @mouseleave="sliderMouseLeave($event)" draggable="false">
+    <div class="main" @mousedown="sliderMousedown($event)" draggable="false">
         <div class="histogram">
             <div v-for="(bin,index) of bins" :key="index+'someBin'"
                 class="bin"
@@ -30,15 +30,36 @@ import { onUpdated } from 'vue';
             interval: {
                 type: Number,
                 default: 1
+            },
+        },
+        watch: {
+            minValue: {
+                handler(value) {
+                    this.lowValue = value;
+                },
+                immediate: true
+            },
+            maxValue: {
+                handler(value) {
+                    this.highValue = value;
+                },
+                immediate: true
             }
         },
+        // model: {
+        //     prop: 'value',
+        //     event: 'input'
+        // },
         data() {
             return {
                 isLeftHandle: Boolean,
                 isClicked: false,
                 leftHandleCentralPosition: Number,
                 rightHandleCentralPosition: Number,
-                handleRadius: 8
+                handleRadius: 8,
+                barThickness: 5,
+                lowValue: Number,
+                highValue: Number
             }
         },
         computed: {
@@ -66,7 +87,7 @@ import { onUpdated } from 'vue';
                 let styles = new Array(this.numberOfBins);
                 for (let i=0; i<this.numberOfBins; i++) {
                     styles[i] = `
-                        width:calc( var(--track-width-css) / ${this.numberOfBins} );
+                        width:calc( var(--calculation-track-width-css) / ${this.numberOfBins} );
                         height:${ (30/this.binsMaxAmount) * this.bins[i] + "px" };
                     `;
                 }
@@ -90,18 +111,9 @@ import { onUpdated } from 'vue';
             },
             sliderMouseup(event) {
                 this.isClicked = false;
-                // let handleDomElement;
-                // if (isLeftHandle) { 
-                //     handleDomElement = document.getElementsByClassName("left-handle");
-                //     this.leftHandleClicked = false;
-                // } else {
-                //     handleDomElement = document.getElementsByClassName("right-handle");
-                //     this.rightHandleClicked = false;
-                // }
-                // handleDomElement.draggable = false;
-            },
-            sliderMouseLeave(event) {
-                this.isClicked = false;
+                document.getElementsByClassName("left-handle")[0].classList.remove('hover-style');
+                document.getElementsByClassName("right-handle")[0].classList.remove('hover-style');
+                document.getElementsByClassName("range")[0].classList.remove('hover-style');
             },
             setHandlePosition(isLeftHandle, handleNewCentralPosition) {
                 let leftHandleDomElement = document.getElementsByClassName( "left-handle" )[0];
@@ -109,20 +121,29 @@ import { onUpdated } from 'vue';
                 let rangeDomElement = document.getElementsByClassName( "range" )[0];
                 let trackDomElement = document.getElementsByClassName( "track" )[0];
                 let trackRect = trackDomElement.getBoundingClientRect();
+                let calculationTrackRect =  trackRect.x  - this.barThickness;
+                let valueInPixels = handleNewCentralPosition - calculationTrackRect.x;
+                let value = (this.maxValue - this.minValue) * (valueInPixels/calculationTrackRect);
+                debugger;
                 if (isLeftHandle && handleNewCentralPosition>trackRect.x && handleNewCentralPosition<this.rightHandleCentralPosition) {
                     this.leftHandleCentralPosition = handleNewCentralPosition;
                     leftHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
-                    rangeDomElement.left = this.leftHandleCentralPosition;
+                    rangeDomElement.style.left = handleNewCentralPosition + 'px';
+                    this.lowValue = value;
+                    this.$emit("lowValue", value);
                 } else if ( !isLeftHandle && handleNewCentralPosition<trackRect.x+trackRect.width && handleNewCentralPosition>this.leftHandleCentralPosition) {
                     this.rightHandleCentralPosition = handleNewCentralPosition;
-                    rightHandleDomElement.style.left = handleNewCentralPosition -this.handleRadius.toString() + 'px';
-                    rangeDomElement.right = this.leftHandleCentralPosition;
-                    // rangeDomElement.left = this.leftHandleCentralPosition;
+                    rightHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                    this.highValue = value;
+                    this.$emit("highValue", value);
                 }
+                if ( this.isClicked ) {
+                    rangeDomElement.classList.add('hover-style');
+                    leftHandleDomElement.classList.add('hover-style');
+                    rightHandleDomElement.classList.add('hover-style');
+                }
+                rangeDomElement.style.width = this.rightHandleCentralPosition - this.leftHandleCentralPosition + 'px';
             }
-        },
-        watch: {
-            
         },
         beforeCreate() {
             // let root = document.documentElement;
@@ -135,12 +156,11 @@ import { onUpdated } from 'vue';
                 let trackBoundingClientRect = mainDiv.getBoundingClientRect();
                 this.leftHandleCentralPosition = trackBoundingClientRect.x + this.handleRadius;
                 this.rightHandleCentralPosition = trackBoundingClientRect.x + trackBoundingClientRect.width - this.handleRadius;
-                // this.setHandlePosition(true, this.leftHandleCentralPosition);
                 this.setHandlePosition(false, this.rightHandleCentralPosition);
                 this.setHandlePosition(true, this.leftHandleCentralPosition);
-                
-                // debugger
             }, 200);
+            window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
+            window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
         }
     }
 
@@ -150,8 +170,8 @@ import { onUpdated } from 'vue';
     :root {
         $main-width: 10em;
         $handle-radius: 8px;
-        $track-width: calc($main-width - 2 * $handle-radius); //TODO question problem
-        --track-width-css: #{$track-width};
+        $calculation-track-width: calc($main-width - 2 * $handle-radius); //TODO question problem
+        --calculation-track-width-css: #{$calculation-track-width};
     }
     div {
         margin: 0px;
@@ -184,8 +204,13 @@ import { onUpdated } from 'vue';
         & .slider {
             $handle-radius: 8px;
             $bar-thickness: 5px;
-            $track-width: calc($main-width - 2 * $handle-radius);
-            // --track-width-css: 3em;
+            $calculation-track-width: calc($main-width - 2 * $handle-radius);
+
+            %hover-style {
+                opacity: 66%;
+                background-color: turquoise !important;
+                cursor: pointer;
+            }
 
             width: 100%;
 
@@ -203,11 +228,9 @@ import { onUpdated } from 'vue';
             & .range {
                 position: absolute;
                 // width determined at runtime
-                width: 100px; // only for testing yet
                 height: $bar-thickness;
                 background-color: dodgerblue;
-                bottom : $handle-radius - $bar-thickness/2;
-                translate: 0 -2*$handle-radius;
+                translate: 0 (-1*$handle-radius -$bar-thickness/2);
             }
 
             & .left-handle, .right-handle {
@@ -219,15 +242,19 @@ import { onUpdated } from 'vue';
                 translate: 0 -2*$handle-radius;
 
                 &:hover {
-                    opacity: 66%;
-                    background-color: turquoise;
-                    cursor: pointer;
+                    @extend %hover-style;
                 }
 
                 &:active {
                     cursor: none;
                 }
             }
+
+            & > .hover-style {
+                @extend %hover-style;
+                // background-color: turquoise;
+            }
+            
         }
     }
 
