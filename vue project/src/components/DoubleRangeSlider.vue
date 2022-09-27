@@ -121,19 +121,24 @@ import { onUpdated } from 'vue';
                 let rangeDomElement = document.getElementsByClassName( "range" )[0];
                 let trackDomElement = document.getElementsByClassName( "track" )[0];
                 let trackRect = trackDomElement.getBoundingClientRect();
-                let calculationTrackRect =  trackRect.x  - this.barThickness;
-                let valueInPixels = handleNewCentralPosition - calculationTrackRect.x;
-                let value = (this.maxValue - this.minValue) * (valueInPixels/calculationTrackRect);
-                debugger;
-                if (isLeftHandle && handleNewCentralPosition>trackRect.x && handleNewCentralPosition<this.rightHandleCentralPosition) {
-                    this.leftHandleCentralPosition = handleNewCentralPosition;
-                    leftHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
-                    rangeDomElement.style.left = handleNewCentralPosition + 'px';
+                let calculationTrackWidth =  trackRect.width  - this.barThickness - 4;
+                let calculationTrackLeft = trackRect.left + this.barThickness/2 + 2;
+                let valueInPixels = handleNewCentralPosition - calculationTrackLeft;
+                let value = (this.maxValue - this.minValue) * (valueInPixels/calculationTrackWidth);
+                value<this.minValue ? value=this.minValue : value>this.maxValue ? value=this.maxValue : void(0);
+                if (isLeftHandle) {
+                    if (handleNewCentralPosition>=trackRect.x+this.barThickness/2 && handleNewCentralPosition<this.rightHandleCentralPosition) {
+                        this.leftHandleCentralPosition = handleNewCentralPosition;
+                        leftHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                        rangeDomElement.style.left = handleNewCentralPosition + 'px';
+                    }
                     this.lowValue = value;
                     this.$emit("lowValue", value);
-                } else if ( !isLeftHandle && handleNewCentralPosition<trackRect.x+trackRect.width && handleNewCentralPosition>this.leftHandleCentralPosition) {
-                    this.rightHandleCentralPosition = handleNewCentralPosition;
-                    rightHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                } else if ( ! isLeftHandle) {
+                    if (handleNewCentralPosition<=trackRect.x+trackRect.width-this.barThickness/2 && handleNewCentralPosition>this.leftHandleCentralPosition) {
+                        this.rightHandleCentralPosition = handleNewCentralPosition;
+                        rightHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                    }
                     this.highValue = value;
                     this.$emit("highValue", value);
                 }
@@ -158,7 +163,7 @@ import { onUpdated } from 'vue';
                 this.rightHandleCentralPosition = trackBoundingClientRect.x + trackBoundingClientRect.width - this.handleRadius;
                 this.setHandlePosition(false, this.rightHandleCentralPosition);
                 this.setHandlePosition(true, this.leftHandleCentralPosition);
-            }, 200);
+            }, 500);
             window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
             window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
         }
@@ -183,19 +188,17 @@ import { onUpdated } from 'vue';
             align-items: center;
             min-width: 10em;
             min-height: 1em;
-            background-color: orange;
             -webkit-user-select: none;
             user-select: none;
         }
 
         & .histogram {
             max-width: 10em;
-            background-color: green;
             display:block;
             
             & .bin {
                 display: inline-block;
-                background-color:cyan;
+                background-color:lighten(green, 5%);
                 border-top-left-radius:3px;
                 border-top-right-radius:3px;
             }
@@ -229,7 +232,7 @@ import { onUpdated } from 'vue';
                 position: absolute;
                 // width determined at runtime
                 height: $bar-thickness;
-                background-color: dodgerblue;
+                background-color: darken(dodgerblue,10%);
                 translate: 0 (-1*$handle-radius -$bar-thickness/2);
             }
 
@@ -238,8 +241,10 @@ import { onUpdated } from 'vue';
                 width: 2 * $handle-radius;
                 height: 2 * $handle-radius;
                 border-radius: $handle-radius;
-                background-color: dodgerblue;
+                background-color: darken(dodgerblue,5%);
                 translate: 0 -2*$handle-radius;
+                padding:0px;
+                margin:0px;
 
                 &:hover {
                     @extend %hover-style;

@@ -12,19 +12,19 @@
         <div class="flex-grid">
             <div class="flex-column">
                 <div class="flex-row">
-                    <label>Min. age : {{ filterBy.minAge }}</label>
+                    <label>Min. age : {{ filterBy.minAge.toString().slice(0,4) }}</label>
                 </div>
-                <div class="flex-row">
+                <!-- <div class="flex-row">
                     <input id="minAgeInput" class="min-input" type="range" min="0" max="100" v-model="filterBy.minAge" @input="ageChange('minAgeInput', filterBy.maxAge, true)">
-                </div>
+                </div> -->
             </div>
             <div class="flex-column">
                 <div class="flex-row">
-                    <label>Max. age : {{ filterBy.maxAge }}</label>
+                    <label>Max. age : {{ filterBy.maxAge.toString().slice(0,4) }}</label>
                 </div>
-                <div class="flex-row">
+                <!-- <div class="flex-row">
                     <input id="maxAgeInput" class="max-input" type="range" min="0" max="100" v-model="filterBy.maxAge" @input="ageChange('maxAgeInput', filterBy.minAge, false)">
-                </div>
+                </div> -->
             </div>
         </div>
         <double-range-slider
@@ -33,7 +33,6 @@
             @lowValue="lowValueHandler" @highValue="highValueHandler"
         ></double-range-slider>
         <!-- </double-range-slider>@input="ageChange('maxAgeInput', filterBy.minAge, false)" -->
-        
     </div>
 </template>
 
@@ -100,10 +99,10 @@ import DoubleRangeSlider from './DoubleRangeSlider.vue';
             // test();
         },
         lowValueHandler(value) {
-            this.minAge = value;
+            this.filterBy.minAge = value;
         },
         highValueHandler(value) {
-            this.maxAge = value;
+            this.filterBy.maxAge = value;
         }
     },
     created() {
@@ -161,6 +160,8 @@ import DoubleRangeSlider from './DoubleRangeSlider.vue';
     }
     label {
         top: 50%;
+        padding: 0px;
+        margin: 0px;
     }
     div {
         &.flex-grid {
