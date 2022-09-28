@@ -4,7 +4,7 @@
             <div>some store number : {{ $store.state.someNumber }}</div>
             <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
             <div>some number imported from props : {{ importedNumber }}</div> <!--(using mapState)-->
-            persons test : {{ $store.getters.printPersons }}
+            persons test : {{ $store.getters.persons }}
             <br>
             persons test : {{ printPersons }}
         </div>
@@ -45,29 +45,9 @@
             }
         },
         watch: {
-            // '$store.state.persons': {
-            //     handler: (newPersons) => {
-            //         console.log("isLoading",this.$data.isLoading);
-            //         this.$data.isLoading=false;
-            //     },
-            //     immediate: true
-            // }
-            
-            // 'persons': {
-            //     handler: function (newValue, oldValue) {
-            //         console.log("new persons : ", newValue);
-            //     },
-            //     deep: true,
-            // },
             '$store.state.persons' (x) {
                 this.isLoading=false;
             },
-            // filterBy : {
-            //     handler: function (value) {
-            //         this.updateFilters();
-            //     },
-            //     deep: true
-            // },
         },
         methods: {
             disabledStyles(index) {
@@ -89,9 +69,6 @@
                 }
             },
         },
-        updated() {
-            // Utils.default.fetchPersons(10, $store.mutations.updatePersons);
-        }
     }
 </script>
 

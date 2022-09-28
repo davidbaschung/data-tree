@@ -7,7 +7,7 @@
         </span>
         <select id="myList" @change="onChange" v-model="filterBy.country">
             <option value="All">All Countries</option>
-            <option v-for="country of Array.from($store.state.countries)" :key="country" :value="country">{{country}}</option>
+            <option v-for="country of Array.from(countries)" :key="country" :value="country">{{country}}</option>
         </select>
         <div class="flex-grid">
             <div class="flex-column">
@@ -37,9 +37,8 @@
 </template>
 
 <script>
-// import { Store } from 'vuex';
-import { mapState, mapGetters } from 'vuex';
-import DoubleRangeSlider from './DoubleRangeSlider.vue';
+    import DoubleRangeSlider from './DoubleRangeSlider.vue';
+    import {mapState} from 'vuex'
 
     export default {
     name: "selector-section",
@@ -56,10 +55,11 @@ import DoubleRangeSlider from './DoubleRangeSlider.vue';
         };
     },
     computed: {
+        ...mapState(["persons"]),
+        ...mapState(["countries"]),
         personsAgeList() {
-            let persons = this.$store.state.persons;
             var ageList = [];
-            for (let p of persons)
+            for (let p of this.persons)
                 ageList.push(p.dob.age);
             return ageList;
         }

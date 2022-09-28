@@ -19,25 +19,41 @@ let store = new Vuex.Store({
     // ),
     persons: [],
     countries: Set,
+    nativesCount: 0
   },
   getters: {
     citiesSentence() {
       // ( TODO ) reduce Set
       // return "The people live in the cities of " + store.state.cities.join(' ');
     },
-    printPersons() {
+    persons() {
       return store.state.persons;
     },
-    testGetter() {
-      return "testGetter";
-    },
-  },
-  mutations: {
-    updatePersons(persons) { // TODO keep?
-      store.state.persons = persons;
+    countries() {
+      return store.state.countries;
     }
   },
-  actions:{}
+  mutations: {
+    UPDATE_PERSONS(state, persons) {
+      state.persons = persons;
+    },
+    UPDATE_COUNTRIES_SET_FILTER(state, countries) {
+      state.countries = countries;
+    },
+    UPDATE_NATIVES_COUNT(state, count) {
+      state.nativesCount = count;
+    }
+  },
+  actions:{
+    UPDATE_COUNTRIES_SET_FILTER({commit, state}, countries) {
+      this.commit("UPDATE_COUNTRIES_SET_FILTER", countries);
+      let nativesCount = 0;
+      state.persons.forEach((p) => {
+        p.location.country == "Switzerland" ? ++nativesCount : void(0);
+      });
+      this.commit("UPDATE_NATIVES_COUNT", nativesCount);
+    }
+  }
 });
 
 let app = new Vue({
