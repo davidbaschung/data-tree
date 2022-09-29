@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import App from './App.vue'
-import json from './persons10.json'
+import * as Utils from './utils.js'
 
 Vue.config.productionTip = false
+Vue.use(Utils);
 Vue.use(Vuex);
 // Utils.default.fetchPersons(10).then(
 //   (resolve)=> {console.log("fetchPersons",resolve)}
@@ -52,6 +53,18 @@ let store = new Vuex.Store({
         p.location.country == "Switzerland" ? ++nativesCount : void(0);
       });
       this.commit("UPDATE_NATIVES_COUNT", nativesCount);
+    },
+    LOAD_PERSONS({commit, state}, amount=100) {
+			Utils.default.fetchPersons(amount)
+      .then((persons) => {
+        store.commit("UPDATE_PERSONS", persons);
+        return persons;
+      })
+      .then((persons) => {
+        let countries = new Set();
+        persons.forEach((p) => countries.add(p.location.country));
+        store.dispatch("UPDATE_COUNTRIES_SET_FILTER", countries);
+      });
     }
   }
 });
