@@ -1,30 +1,44 @@
 <template>
-    <div id="main">
-        <input id="nameInput" placeholder="Name, Mail, Phone..." v-model="filterBy.input"/>
+    <div class="selector-section">
+        <!-- TODO : use a custom v-model compoennt -->
+        <input
+            type="text"
+            class="nameInput"
+            placeholder="Name, Mail, Phone..."
+            v-model="filterBy.input"
+            @input="onFilterChange('input', $event.target.value)"
+            />
+            <!-- As the v-model does not serve as a v-bind, we can only use the input event to listen to modify filterBy -->
         <span>
-            <input type="checkbox" v-model="filterBy.men" /> <label for="men">Men</label> <br>
-            <input type="checkbox" v-model="filterBy.women" /> <label for="women">Women</label> <br>
+            <input
+                type="checkbox"
+                v-model="filterBy.men"
+            />
+                <label for="men">Men</label> <br>
+            <input
+                type="checkbox"
+                v-model="filterBy.women"
+            />
+            <label for="women">Women</label> <br>
         </span>
-        <select id="myList" @change="onChange" v-model="filterBy.country">
+        <select
+            id="myList"
+            @change="onChange"
+            v-model="filterBy.country"
+        >
             <option value="All">All Countries</option>
-            <option v-for="country of Array.from(countries)" :key="country" :value="country">{{country}}</option>
+            <option v-for="(country, index) of Array.from(countries)" :key="index" :value="country">{{country}}</option>
         </select>
         <div class="flex-grid">
             <div class="flex-column">
                 <div class="flex-row">
                     <label>Min. age : {{ filterBy.minAge.toString().slice(0,4) }}</label>
                 </div>
-                <!-- <div class="flex-row">
-                    <input id="minAgeInput" class="min-input" type="range" min="0" max="100" v-model="filterBy.minAge" @input="ageChange('minAgeInput', filterBy.maxAge, true)">
-                </div> -->
             </div>
             <div class="flex-column">
                 <div class="flex-row">
                     <label>Max. age : {{ filterBy.maxAge.toString().slice(0,4) }}</label>
                 </div>
-                <!-- <div class="flex-row">
-                    <input id="maxAgeInput" class="max-input" type="range" min="0" max="100" v-model="filterBy.maxAge" @input="ageChange('maxAgeInput', filterBy.minAge, false)">
-                </div> -->
             </div>
         </div>
         <double-range-slider
@@ -73,11 +87,17 @@
         },
     },
     methods: {
+        onFilterChange(key, val) {
+            console.log("filter has changed: ", key, val);
+            // TODO question : why ?
+            // clone the object to a plain object, in order to keep reactivity encapsulated
+            // this.$emit("input", { ...this.filterBy });
+        },
         onChange(values) {
             console.log("change : ", values);
         },
         ageChange(callerRangeinputTag, rangeLimit, isMaximumTest) {
-            var callerRangeinput = document.getElementById(callerRangeinputTag);
+            var callerRangeinput = document.getElementsByClassName(callerRangeinputTag)[0];
             if (isMaximumTest && eval(callerRangeinput.value) < rangeLimit
                 || !isMaximumTest && eval(callerRangeinput.value) > rangeLimit)
                 callerRangeinput.setAttribute("style", callerRangeinput.style + "accent-color:DodgerBlue");
@@ -86,7 +106,6 @@
         },
         updateFilters() {
             this.$emit("personsFiltering", this.filterBy);
-            // TODO remove
             // let that = this;
             // const test2 = (key) => { return };
             // const testFn =() => {
@@ -112,7 +131,8 @@
 }
 </script>
 
-<style lang="scss"> // not scoped style do apply globally
+<style lang="scss">
+    /* not scoped styles do apply globally */
     :root{
         background-color: rgb(235, 215, 176);
     }
@@ -126,7 +146,7 @@
         color:lightyellow;
         margin-right: 1em;
     }
-    #main {
+    .selector-section {
         width:100%;
         display: flex;
 
@@ -134,7 +154,12 @@
             vertical-align: middle;
         }
     }
-    input {
+
+    // TODO question : means scoping otherwise inside the scss?
+  // better nest all elements within, so that the styles do not get applied globally
+  // here - as you scpecified scope above it is safe, but when we use external styles files, better nest them to get them properly scoped
+  // or add generic styles to stuff like input so that it is used accross
+  input {
         background-color: whitesmoke;
         margin: 2px;
         border-radius:5px;
@@ -163,19 +188,17 @@
         padding: 0px;
         margin: 0px;
     }
-    div {
-        &.flex-grid {
-            align-items:left;
-            flex-flow: column wrap;
-            justify-content: flex-start;
-        }
-        &.flex-row {
-            flex: 0 0 7em;
-            margin:0px;
-        }
-        &.flex-column {
-            display:flex;
-        }
+    .flex-grid {
+        align-items:left;
+        flex-flow: column wrap;
+        justify-content: flex-start;
+    }
+    .flex-row {
+        flex: 0 0 7em;
+        margin:0px;
+    }
+    .flex-column {
+        display:flex;
     }
 </style>
 

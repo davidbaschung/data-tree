@@ -1,5 +1,5 @@
 <template>
-    <div id="grid-section" class="flex">
+    <div class="flex grid-section">
         <div v-if="false">
             <div>some store number : {{ $store.state.someNumber }}</div>
             <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
@@ -13,13 +13,19 @@
                 Loading...
             </div>
         </div>
-        <div v-for="(p, index) in persons" :key="index">
+        <div v-show=" ! isLoading" v-for="(p, index) in persons" :key="index">
             <person-card :person="p"></person-card>
         </div>
     </div>
 </template>
 
 <script>
+/**
+ * The GridSection provides the User with a list of persons
+ * Contract: This component shows the User a list of Persons provided by the parent component
+ * It does not need to know about the store and does not need to change the state.
+ * It simply takes an array of Persons and displays them
+ */
     import { mapState, mapGetters } from 'vuex'
     import PersonCard from "./PersonCard.vue"
     export default {
@@ -42,11 +48,26 @@
             return {
                 isLoading: true,
                 loadStart: Date,
+                disabled: {
+                    'background-color': 'darkgray',
+                    'border' : '5px solid gray',
+                    'display' : 'flex',
+                    'justify-content' : 'center',
+                    'align-items' : 'center',
+                    /* alternative for vertical alignment, with flex parent : */
+                    // 'align': "center",
+                    // 'vertical-align': "middle",
+                    'width' : '7em',
+                    'height' : '7em',
+                    'font-weight' : 'bold',
+                    'color' : 'white',
+                }
             }
         },
         watch: {
             '$store.state.persons' (x) {
-                this.isLoading=false;
+                this.isLoading = x[0] == undefined;
+                this.$emit("isLoading", this.isLoading);
             },
         },
         methods: {
@@ -56,16 +77,10 @@
                 let opacity = Math.pow(0.6, index);
 
                 return {
-                    'opacity' : opacity,
-                    'background-color': 'darkgray',
-                    'border' : '5px solid gray',
-                    'display' : 'flex',
-                    'justify-content' : 'center',
-                    'align-items' : 'center',
-                    'width' : '7em',
-                    'height' : '7em',
-                    'font-weight' : 'bold',
-                    'color' : 'white',
+                    ...{
+                        'opacity' : opacity,
+                    },
+                    ...this.disabled
                 }
             },
         },
@@ -80,9 +95,10 @@
         .flex {
             display: flex
         }
-        #grid-section {
+        .grid-section {
             flex-wrap: wrap;
         }
+        // you wanted to know how to center vertically. Put the text in a block element and use flex on the parent. see scss below
     }
 
     img {

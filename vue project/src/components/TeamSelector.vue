@@ -1,9 +1,9 @@
 <template>
 	<div id="team-selection">
         <button @click="onReload">reload</button>
-        <span class="span-remark">isLoading : <span :value="this.isLoading">{{isLoading}}</span></span>
+        <span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
 		<selector-section @personsFiltering="setPersonsFilterBy"></selector-section>
-		<grid-section :persons="filteredPersons"></grid-section>
+		<grid-section :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
 	</div>
 </template>
 
@@ -16,7 +16,6 @@
     * All the Business Logic is handled here, so that the logic is centralized and can easily be traced.
     * In no child component there is the need to access the store or have logic that goes beyond ensuring the components contract
     */
-	import Vue from 'vue';
 	import { mapGetters } from 'vuex'
 	import SelectorSection from './SelectorSection.vue'
 	import GridSection from './GridSection.vue';
@@ -29,6 +28,7 @@
 		},
 		data() {
 			return {
+				isLoading: false,
 				personsFilterBy: {}, // for SelectorSection event reception
 				refreshKey: 0
 			}
@@ -37,7 +37,13 @@
 			...mapGetters(["persons"]),
 			filteredPersons() {
 				this.refreshKey;
-				return this.persons.filter(this.filters);
+				console.log("filtering : " ,this.persons.value);
+				let p = this.persons;
+				return (
+					(p != undefined )
+					? p.filter(this.filters)
+					: []
+				);
 			},
 		},
 		methods: {
@@ -69,6 +75,7 @@
 				return false;
 			},
             onReload() {
+				this.$store.commit("RESET_PERSONS");
                 this.loadPersons();
             },
             loadPersons() {
@@ -80,7 +87,11 @@
                 //     }, 1000);
                 // })
                 // TODO has a use? (already reload in case of failure)
-            }
+            },
+			updateIsLoading(isLoading) {
+				console.log("updateIsLoading : ", isLoading);
+				this.isLoading = isLoading;
+			}
             
 		},
 		created() {
@@ -100,7 +111,7 @@
     span > span[value*='true'] {
         color : limegreen !important;
     }
-    span > span[value*='false'] {
+    span > span:not([value*='true']) {
         color : red !important;
     }
 </style>

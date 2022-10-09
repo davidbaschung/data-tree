@@ -125,22 +125,27 @@ import { onUpdated } from 'vue';
                 let calculationTrackLeft = trackRect.left + this.barThickness/2 + 2;
                 let valueInPixels = handleNewCentralPosition - calculationTrackLeft;
                 let value = (this.maxValue - this.minValue) * (valueInPixels/calculationTrackWidth);
-                value<this.minValue ? value=this.minValue : value>this.maxValue ? value=this.maxValue : void(0);
+                value =
+                    value < this.minValue ? this.minValue
+                    : value > this.maxValue ? this.maxValue
+                    : isLeftHandle && value > this.highValue ? this.highValue
+                    : ! isLeftHandle && value < this.lowValue ? this.lowValue
+                    : value;
                 if (isLeftHandle) {
                     if (handleNewCentralPosition>=trackRect.x+this.barThickness/2 && handleNewCentralPosition<this.rightHandleCentralPosition) {
                         this.leftHandleCentralPosition = handleNewCentralPosition;
                         leftHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
                         rangeDomElement.style.left = handleNewCentralPosition + 'px';
+                        this.lowValue = value;
+                        this.$emit("lowValue", value);
                     }
-                    this.lowValue = value;
-                    this.$emit("lowValue", value);
                 } else if ( ! isLeftHandle) {
                     if (handleNewCentralPosition<=trackRect.x+trackRect.width-this.barThickness/2 && handleNewCentralPosition>this.leftHandleCentralPosition) {
                         this.rightHandleCentralPosition = handleNewCentralPosition;
                         rightHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                        this.highValue = value;
+                        this.$emit("highValue", value);
                     }
-                    this.highValue = value;
-                    this.$emit("highValue", value);
                 }
                 if ( this.isClicked ) {
                     rangeDomElement.classList.add('hover-style');

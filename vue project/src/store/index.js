@@ -1,0 +1,99 @@
+import Vue from 'vue'
+import Vuex from 'vuex'
+import App from '../App.vue'
+import * as Utils from '../utils.js'
+import { fetchPersons } from "../api/";
+Vue.config.productionTip = false
+Vue.use(Utils);
+Vue.use(Vuex);
+
+/**
+ * It is good practice to have the store in its own folder
+ * For now I just used one file index.js as the store is really small
+ * In a more complicated App this of course will grow. 
+ * Then we usually move getters, mutations and actions in its own file
+ * and structure the store by modules
+ * The point is to make code more easy to navigate and have clear responsibilities
+ * so that reasoning about the signal flow is more easy to track
+ */
+let store = new Vuex.Store({
+  state: {
+    someNumber: 3,
+    persons: [],
+    countries: [Set, Array], default: () => [], // allows to return the default type as an array
+    nativesCount: 0
+  },
+  getters: {
+    citiesSentence() {
+      // ( TODO ) reduce Set
+      // return "The people live in the cities of " + store.state.cities.join(' ');
+    },
+    persons() {
+      return store.state.persons;
+    },
+    getPersons: state => { // alternative
+      return state.persons;
+    },
+    countries() {
+      return store.state.countries;
+    }
+  },
+    /**
+     * INHO Vuex is a bit too verbose. This will get more straightforward when using Vue 3 and pinia.
+     * Still the point of the mutations is to protect changes to the state.
+     * Every change to the store should go through a mutation (even if it is verbose).
+     * The reason for this is again: When things get more complicated we want to prevent 100s of components
+     * to change the state directly. This can lead to some very hard to track bugs (who does change what an when)
+     * If we have every change go through a mutation then these things are way easier to track and 
+     * it makes maintaining code much easier and fun
+     */
+    // self-note : this means tracking (with logs) can be done for all to the accesses to the store at once.
+  mutations: {
+    UPDATE_PERSONS(state, persons) {
+      state.persons = persons;
+    },
+    RESET_PERSONS(state) {
+      state.persons = [];
+    },
+    UPDATE_COUNTRIES_SET_FILTER(state, countries) {
+      state.countries = countries;
+    },
+    UPDATE_NATIVES_COUNT(state, count) {
+      state.nativesCount = count;
+    }
+  },
+  /**
+   * Actions are a good option if we have async calls or need to bundle multiple changes 
+   * to the state of store 
+   */
+  actions:{
+    UPDATE_COUNTRIES_SET_FILTER({commit, state}, countries) {
+      this.commit("UPDATE_COUNTRIES_SET_FILTER", countries);
+      let nativesCount = 0;
+      state.persons.forEach((p) => {
+        p.location.country == "Switzerland" ? ++nativesCount : void(0);
+      });
+      this.commit("UPDATE_NATIVES_COUNT", nativesCount);
+    },
+    LOAD_PERSONS({commit, state}, amount=100) {
+			Utils.default.fetchPersons(amount)
+      .then((persons) => {
+        store.commit("UPDATE_PERSONS", persons);
+        return persons;
+      })
+      .then((persons) => {
+        let countries = new Set();
+        persons.forEach((p) => countries.add(p.location.country));
+        store.dispatch("UPDATE_COUNTRIES_SET_FILTER", countries);
+      });
+    }
+  }
+});
+
+let app = new Vue({
+  el:'#app',
+  store,
+  render: h => h(App, {props: {name:'test'  /* :this.fetchPersons(10) */}}),
+});
+app.$mount('#app');
+
