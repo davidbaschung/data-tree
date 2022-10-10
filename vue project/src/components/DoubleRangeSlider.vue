@@ -168,7 +168,7 @@ import { onUpdated } from 'vue';
                 this.rightHandleCentralPosition = trackBoundingClientRect.x + trackBoundingClientRect.width - this.handleRadius;
                 this.setHandlePosition(false, this.rightHandleCentralPosition);
                 this.setHandlePosition(true, this.leftHandleCentralPosition);
-            }, 500);
+            }, 600);
             window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
             window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
         }

@@ -46,12 +46,13 @@
             :dataArray="personsAgeList" :interval="10"
             @lowValue="lowValueHandler" @highValue="highValueHandler"
         ></double-range-slider>
-        <!-- </double-range-slider>@input="ageChange('maxAgeInput', filterBy.minAge, false)" -->
+        <skills-spider></skills-spider>
     </div>
 </template>
 
 <script>
     import DoubleRangeSlider from './DoubleRangeSlider.vue';
+    import SkillsSpider from './Spider';
     import {mapState} from 'vuex'
 
     export default {
@@ -127,7 +128,10 @@
     created() {
         this.updateFilters();
     },
-    components: { DoubleRangeSlider }
+    components: {
+        DoubleRangeSlider,
+        SkillsSpider
+    }
 }
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-	<div id="team-selection">
+	<div class="team-selection">
         <button @click="onReload">reload</button>
         <span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
 		<selector-section @personsFiltering="setPersonsFilterBy"></selector-section>
@@ -37,7 +37,6 @@
 			...mapGetters(["persons"]),
 			filteredPersons() {
 				this.refreshKey;
-				console.log("filtering : " ,this.persons.value);
 				let p = this.persons;
 				return (
 					(p != undefined )
