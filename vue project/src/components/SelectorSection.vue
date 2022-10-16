@@ -46,7 +46,7 @@
             :dataArray="personsAgeList" :interval="10"
             @lowValue="lowValueHandler" @highValue="highValueHandler"
         ></double-range-slider>
-        <skills-spider></skills-spider>
+        <skills-spider v-model="this.skills"></skills-spider>
     </div>
 </template>
 
@@ -67,11 +67,11 @@
                 minAge: 0,
                 maxAge: 100,
             },
+            skills: ["Photoshop","Illustrator","Powerpoint","Rhinoceros","Vray","Alias"]
         };
     },
     computed: {
-        ...mapState(["persons"]),
-        ...mapState(["countries"]),
+        ...mapState(["persons", "countries"]),
         personsAgeList() {
             var ageList = [];
             for (let p of this.persons)

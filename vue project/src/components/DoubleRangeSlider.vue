@@ -161,6 +161,8 @@ import { onUpdated } from 'vue';
             /* doesn't help because of scss variables precompiling */
         },
         mounted() {
+        // beforeUpdate() {
+        // updated() {
             setTimeout( () => { // TODO question no lifecycle hook for rendering?
                 let mainDiv = document.getElementsByClassName('main')[0];
                 let trackBoundingClientRect = mainDiv.getBoundingClientRect();
@@ -253,10 +255,6 @@ import { onUpdated } from 'vue';
 
                 &:hover {
                     @extend %hover-style;
-                }
-
-                &:active {
-                    cursor: none;
                 }
             }
 
