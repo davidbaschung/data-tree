@@ -11,10 +11,10 @@
     <div>
         <div style="position:relative">
             <div class="spider-selector" @click="openWidget">
-                <div class="polygon" draggable="true" @dragover.prevent="dragOverPolygon" @drop="dropPolygon($event)" :level="5"></div> <!-- must remain placed first, for relative position in CSS-->
+                <div class="polygon" @dragover.prevent @drop="dropPolygon($event)" :level="5"></div> <!-- must remain placed first, for relative position in CSS-->
                 <span class="skill-name" hidden @drag.prevent v-for="(skill, i) of this.value" :key="i+'skill-name'">{{skill}}</span>
-                <div class="handle" hidden draggable="true" @dragstart="dragStartHandle" @drag="dragHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
-                <div class="spider-web"></div>
+                <div class="handle" hidden draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
+                <div class="spider-web" hidden></div>
             </div>
         </div>
         <div class="overlay" hidden></div>
@@ -49,16 +49,9 @@
                 context.appendChild(newpolygon);
                 this.addpolygon(newpolygon, --countDown);
             },
-            dragOverPolygon(event) {
-                // console.log("over :", event);
-            },
             dropPolygon(event) {
                 const skillAxisIndex = event.dataTransfer.getData("skillAxisIndex");
                 let handleElement = document.querySelector(`.handle[skillAxisIndex='${skillAxisIndex}']`);
-                // document.getElementsByClassName("polygon").forEach( (polygon) => {
-                //     if (polygon.getAttribute("level") == level)
-                //         handleElement = polygon;
-                // });
                 this.setHandlePositionByPlace(handleElement, event.target.getAttribute("level"), skillAxisIndex);
             },
             updatepolygonClass(context, className, isAppending=true) {
@@ -83,22 +76,24 @@
             setHandlePositionByCenter(element, x, y) {
                 element.style.left = x - 8 + 'px';
                 element.style.top = y - 8 + 'px';
-                // let spiderWeb = document.getElementsByClassName("spider-web");
-                // let clipPath = "";
-                // let handlePositions = document.getElementsByClassName("handle");
+                let spiderWeb = document.getElementsByClassName("spider-web")[0];
+                let spiderSelector = document.getElementsByClassName("spider-selector")[0];
+                let spiderSelectorRect = spiderSelector.getBoundingClientRect();
+                let clipPath = "polygon(";
+                const handles = document.getElementsByClassName("handle");
                 
-                // TODO make clipPath /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-                // console.log(handlePositions);
-                // spiderWeb.polygon = clipPath;
+                for (let h of handles) {
+                    const hRect = h.getBoundingClientRect();
+                    clipPath += (hRect.x-spiderSelectorRect.x+8) + "px " + (hRect.y-spiderSelectorRect.y+8) + "px, ";
+                }
+                clipPath = clipPath.substring(0, clipPath.length-2) + ")";
+                spiderWeb.style.clipPath = clipPath;
             },
-            dragStartHandle(event) { //TODO remove?
+            dragStartHandle(event) {
                 event.dataTransfer.setData('skillAxisIndex', event.target.getAttribute("skillAxisIndex"));
             },
-            dragHandle() { //TODO remove?
-                // console.log("drag : ");
-            },
             openWidget() {
+                console.log("openwidgets");
                 let spider = document.getElementsByClassName("spider-selector")[0];
                 this.updatepolygonClass(spider, "closing", false);
                 this.updatepolygonClass(spider, "open");
@@ -125,9 +120,10 @@
                     document.querySelectorAll(".handle").forEach( (element, index) => {
                         element.removeAttribute("hidden");
                         element.classList.add("open");
-                        this.setHandlePositionByPlace(element, 5, index);
+                        this.setHandlePositionByPlace(element, 0, index);
                         element.skillAxisIndex = index;
                     });
+                    document.getElementsByClassName("spider-web")[0].removeAttribute("hidden");
                 }, 500);
             },
             closeWidget() {
@@ -153,6 +149,7 @@
                         element.classList.remove("closing");
                         void element.offsetWidth;
                         element.setAttribute("hidden", true);
+                        document.getElementsByClassName("spider-web")[0].setAttribute("hidden",true);
                     });
                 }, 500);
             }
@@ -168,8 +165,8 @@
             let spider = document.getElementsByClassName("spider-selector")[0];
             let root = document.documentElement;
             root.style.setProperty("--basis-color", this.primaryColor);
-            let toppolygon = document.getElementsByClassName("polygon")[0];
-            this.addpolygon(toppolygon, 5 - 1);
+            let topPolygon = document.getElementsByClassName("polygon")[0];
+            this.addpolygon(topPolygon, 5 - 1);
             window.addEventListener("click", (event) => {
                 if ( ! spider.contains(event.target) && spider.classList.contains("open"))
                     this.closeWidget();
@@ -203,7 +200,7 @@
         height: 30px;
         padding: 4px;
         background-color: dodgerblue !important;
-        box-shadow: 0px 0px 3px 0px #0ff;
+        box-shadow: 0px 0px 3px 0px cyan;
         border-radius: 30px;
     }
     .spider-selector.open, .spider-selector.closing {
@@ -213,6 +210,7 @@
         width: 290px;
         height: 290px;
         padding: 40px;
+        background-color: dodgerblue !important;
         outline: 10px solid royalblue;
         outline-offset: -10px;
         box-shadow: none;
@@ -271,7 +269,7 @@
         width: calc( 2 * var(--handle-radius) );
         height: calc( 2 * var(--handle-radius) );
         border-radius: var(--handle-radius);
-        background-color: purple;
+        background-color: rgb(127, 104, 255);
         filter: brightness( 95% );
         /* width: 10px;
         height: 10px; */
@@ -288,18 +286,14 @@
     .spider-web {
         position: absolute;
         z-index: 5;
-        pointer-events: none;
-        opacity: 50%;
         top: 0px;
         left: 0px;
         width: 100%;
         height: 100%;
-        background-color: salmon;
+        pointer-events: none;
+        opacity: 50%;
+        background-color: pink;
     }
-    /* .spider-web.open {
-        width: 270px;
-        height: 270px;
-    } */
     @keyframes open__overlay {
         from { opacity: 0% }
         to { opacity: 50% }
