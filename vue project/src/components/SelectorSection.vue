@@ -46,7 +46,8 @@
             :dataArray="personsAgeList" :interval="10"
             @lowValue="lowValueHandler" @highValue="highValueHandler"
         ></double-range-slider>
-        <skills-spider v-model="this.skills"></skills-spider>
+        <skills-spider v-model="filterBy.skills"></skills-spider>
+        <!-- <div>{{filterBy.skills[1].level}}</div> -->
     </div>
 </template>
 
@@ -57,6 +58,7 @@
 
     export default {
     name: "selector-section",
+    props: ["skillSet"],
     data() {
         return {
             filterBy: {
@@ -66,8 +68,15 @@
                 country: "All",
                 minAge: 0,
                 maxAge: 100,
+                skills: [
+                    {key: "skill0", label:"skill 0", level:0},
+                    {key: "skill1", label:"skill 1", level:0},
+                    {key: "skill2", label:"skill 2", level:0},
+                    {key: "skill3", label:"skill 3", level:0},
+                    {key: "skill4", label:"skill 4", level:0},
+                    {key: "skill5", label:"skill 5", level:0}
+                ]
             },
-            skills: ["Photoshop","Illustrator","Powerpoint","Rhinoceros","Vray","Alias"]
         };
     },
     computed: {
@@ -86,6 +95,14 @@
             },
             deep: true
         },
+        "skillSet": {
+            handler(set) {
+                if (set != undefined)
+                    this.filterBy.skills = set;
+            },
+            deep: true,
+            immediate: true
+        }
     },
     methods: {
         onFilterChange(key, val) {

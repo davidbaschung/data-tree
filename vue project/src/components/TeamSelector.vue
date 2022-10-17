@@ -2,7 +2,7 @@
 	<div class="team-selection">
         <button @click="onReload">reload</button>
         <span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
-		<selector-section @personsFiltering="setPersonsFilterBy"></selector-section>
+		<selector-section @personsFiltering="setPersonsFilterBy" :skill-set="this.skills"></selector-section>
 		<grid-section :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
 	</div>
 </template>
@@ -30,7 +30,15 @@
 			return {
 				isLoading: false,
 				personsFilterBy: {}, // for SelectorSection event reception
-				refreshKey: 0
+				refreshKey: 0,
+				skills: [
+                    {key:"photoshop", label:"Photoshop", level:0},
+                    {key:"illustrator", label:"Illustrator", level:0},
+                    {key:"powerpoint", label:"Powerpoint", level:0},
+                    {key:"rhinoceros", label:"Rhinoceros", level:0},
+                    {key:"vray", label:"Vray", level:0},
+                    {key:"alias", label:"Alias", level:0}
+                ]
 			}
 		},
 		computed: {
@@ -51,13 +59,19 @@
 				this.refreshKey++;
 			},
 			filters(p) {
+				if (this.personsFilterBy.skills==undefined || p.skills==undefined) return true; // TODO remove if ADD_SKILLS_TO_PERSONS callback possible from VueX instead of setTimeout
 				return (
 					(this.checkAttributes(p)) &&
 					(this.personsFilterBy.men ? true : !(p.gender == 'male')) &&
 					(this.personsFilterBy.women ? true : !(p.gender == 'female')) &&
 					(this.personsFilterBy.country == "All" ? true : p.location.country == this.personsFilterBy.country) &&
 					(this.personsFilterBy.minAge < p.dob.age) &&
-					(this.personsFilterBy.maxAge > p.dob.age)
+					(this.personsFilterBy.maxAge > p.dob.age) &&
+					(this.personsFilterBy.skills.every( (filterSkill, index) => {
+						console.log(filterSkill.level, index, p.skills)
+						return filterSkill.level <= Object.values(p.skills[index])[0];
+					}))
+					// true
 				);
 			},
 			checkAttributes(personAttribute) {
@@ -80,12 +94,9 @@
             loadPersons() {
                 this.isLoading = true;
                 this.$store.dispatch("LOAD_PERSONS", 10);
-                // this.$store.dispatch("LOAD_PERSONS", 10).then(() => {
-                //     setTimeout(() => {
-                //         this.isLoading = false;
-                //     }, 1000);
-                // })
-                // TODO has a use? (already reload in case of failure)
+				setTimeout( () => {
+					this.$store.dispatch("ADD_SKILLS_TO_PERSONS", {skillNames:this.skills.map(skill =>skill.key), skillMaxLevel:5});
+				}, 1000);
             },
 			updateIsLoading(isLoading) {
 				console.log("updateIsLoading : ", isLoading);

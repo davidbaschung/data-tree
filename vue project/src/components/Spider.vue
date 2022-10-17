@@ -1,10 +1,10 @@
 <!-- details TODO possibly
     adjust sliderRange extremas
     adjust widget absolute left
-    closeWidget glitch
     dégradé couleur levels : 0 -> rouge, 5 -> vert
     animation des poignées
     opening vers le bas ou centre-gauche selon largeur
+    skills setting callback
 -->
 
 <template>
@@ -12,7 +12,7 @@
         <div style="position:relative">
             <div class="spider-selector" @click="openWidget">
                 <div class="polygon" @dragover.prevent @drop="dropPolygon($event)" :level="5"></div> <!-- must remain placed first, for relative position in CSS-->
-                <span class="skill-name" hidden @drag.prevent v-for="(skill, i) of this.value" :key="i+'skill-name'">{{skill}}</span>
+                <span class="skill-name" hidden @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">{{skill.label}}</span>
                 <div class="handle" hidden draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
                 <div class="spider-web" hidden></div>
             </div>
@@ -27,13 +27,24 @@
         data() {
             return {
                 primaryColor: 'limegreen',
-                secondaryColor: 'chartreuse'
+                secondaryColor: 'chartreuse',
+                skills: [],
             }
         },
         props: {
             value : {
                 type: Array,
-                default: () => [1,1,1,1,1,1]
+                // default: () => [1,1,1,1,1,1]
+            }
+        },
+        watch: {
+            value: {
+                handler: function (value) {
+                    this.skills = value;
+                },
+                deep: true,
+                immediate: true
+                // TODO basic data controlling and typing in watcher or prop declaration
             }
         },
         emits: [ 'input' ],
@@ -52,7 +63,7 @@
             dropPolygon(event) {
                 const skillAxisIndex = event.dataTransfer.getData("skillAxisIndex");
                 let handleElement = document.querySelector(`.handle[skillAxisIndex='${skillAxisIndex}']`);
-                this.setHandlePositionByPlace(handleElement, event.target.getAttribute("level"), skillAxisIndex);
+                this.setHandlePositionByPlace(handleElement, parseInt(event.target.getAttribute("level")), skillAxisIndex);
             },
             updatepolygonClass(context, className, isAppending=true) {
                 isAppending ? context.classList.add(className) : context.classList.remove(className);
@@ -61,6 +72,8 @@
                 void context.offsetWidth; /* referencing a position attribute without effect allow the CSS animation to restart on classList update */
             },
             setHandlePositionByPlace(handleElement, skillLevel, skillAxisIndex) {
+                this.skills[skillAxisIndex].level = skillLevel;
+                this.$emit("input", this.skills);
                 const targetPolygon = document.getElementsByClassName("polygon")[5-skillLevel];
                 const polygonRect = targetPolygon.getBoundingClientRect();
                 const spiderRect = document.getElementsByClassName("spider-selector")[0].getBoundingClientRect();
@@ -93,7 +106,6 @@
                 event.dataTransfer.setData('skillAxisIndex', event.target.getAttribute("skillAxisIndex"));
             },
             openWidget() {
-                console.log("openwidgets");
                 let spider = document.getElementsByClassName("spider-selector")[0];
                 this.updatepolygonClass(spider, "closing", false);
                 this.updatepolygonClass(spider, "open");
@@ -120,8 +132,8 @@
                     document.querySelectorAll(".handle").forEach( (element, index) => {
                         element.removeAttribute("hidden");
                         element.classList.add("open");
-                        this.setHandlePositionByPlace(element, 0, index);
-                        element.skillAxisIndex = index;
+                        this.setHandlePositionByPlace(element, this.skills[index].level, index);
+                        element.skillAxisIndex = parseInt(index);
                     });
                     document.getElementsByClassName("spider-web")[0].removeAttribute("hidden");
                 }, 500);
@@ -141,6 +153,10 @@
                     void element.offsetWidth;
                     element.classList.add("closing");
                 });
+                setTimeout( () => { /* hides spider for 15ms to solve the glitch flashing the opened spider */
+                    overlay.setAttribute("hidden",true);
+                    spider.setAttribute("hidden",true);
+                }, 485);
                 setTimeout(() => {
                     overlay.classList.remove("closing");
                     void overlay.offsetWidth;
@@ -152,6 +168,9 @@
                         document.getElementsByClassName("spider-web")[0].setAttribute("hidden",true);
                     });
                 }, 500);
+                setTimeout( () => {
+                    spider.removeAttribute("hidden");
+                }, 510);
             }
         },
         beforeCreate() {

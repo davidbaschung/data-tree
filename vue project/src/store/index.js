@@ -86,6 +86,15 @@ let store = new Vuex.Store({
         persons.forEach((p) => countries.add(p.location.country));
         store.dispatch("UPDATE_COUNTRIES_SET_FILTER", countries);
       });
+    },
+    ADD_SKILLS_TO_PERSONS({commit, state}, payload) {
+      state.persons.forEach( (person) => {
+        let personSkills = [payload.skillNames.length];
+        payload. skillNames.forEach( (skillName, index) => {
+          personSkills[index] = { [skillName] : Math.floor(Math.random()*(1+payload.skillMaxLevel)) };
+        });
+        person.skills = personSkills;
+      });
     }
   }
 });
