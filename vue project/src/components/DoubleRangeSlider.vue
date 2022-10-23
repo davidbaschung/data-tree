@@ -161,9 +161,10 @@ import { onUpdated } from 'vue';
             /* doesn't help because of scss variables precompiling */
         },
         mounted() {
-        // beforeUpdate() {
-        // updated() {
-            setTimeout( () => { // TODO question no lifecycle hook for rendering?
+            window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
+            window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
+            // this.$nextTick( () => {
+            setTimeout( () => { // TODO question no lifecycle hook for rendering? updated and nextTick are unsuseful
                 let mainDiv = document.getElementsByClassName('main')[0];
                 let trackBoundingClientRect = mainDiv.getBoundingClientRect();
                 this.leftHandleCentralPosition = trackBoundingClientRect.x + this.handleRadius;
@@ -171,9 +172,8 @@ import { onUpdated } from 'vue';
                 this.setHandlePosition(false, this.rightHandleCentralPosition);
                 this.setHandlePosition(true, this.leftHandleCentralPosition);
             }, 600);
-            window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
-            window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
-        }
+            // });
+        },
     }
 
 </script>

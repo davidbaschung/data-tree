@@ -47,7 +47,18 @@
             @lowValue="lowValueHandler" @highValue="highValueHandler"
         ></double-range-slider>
         <skills-spider v-model="filterBy.skills"></skills-spider>
-        <!-- <div>{{filterBy.skills[1].level}}</div> -->
+        <div class="flex-grid">
+            <div class="flex-column">
+                <div class="flex-row">
+                    <input type="radio" v-model="filterBy.availability" value="0">Available now
+                </div>
+            </div>
+            <div class="flex-column">
+                <div class="flex-row">
+                    <input type="radio" v-model="filterBy.availability" value="1">Now or later
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -75,7 +86,8 @@
                     {key: "skill3", label:"skill 3", level:0},
                     {key: "skill4", label:"skill 4", level:0},
                     {key: "skill5", label:"skill 5", level:0}
-                ]
+                ],
+                availability: 1,
             },
         };
     },

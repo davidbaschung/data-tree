@@ -1,10 +1,12 @@
 <template>
-	<div class="team-selection">
-        <button @click="onReload">reload</button>
-        <span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
-		<selector-section @personsFiltering="setPersonsFilterBy" :skill-set="this.skills"></selector-section>
-		<grid-section :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
-	</div>
+	<KeepAlive include="selector" exclude="results"> <!-- Could be used when the page has several tabs, e.g. one for TeamSelector and another new TeamBuilder -->
+		<div class="team-selection">
+			<button @click="onReload">reload</button>
+			<span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
+			<selector-section name="selector" @personsFiltering="setPersonsFilterBy" :skill-set="this.skills"></selector-section>
+			<grid-section name="results" :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
+		</div>
+	</KeepAlive>
 </template>
 
 <script>
@@ -68,10 +70,9 @@
 					(this.personsFilterBy.minAge < p.dob.age) &&
 					(this.personsFilterBy.maxAge > p.dob.age) &&
 					(this.personsFilterBy.skills.every( (filterSkill, index) => {
-						console.log(filterSkill.level, index, p.skills)
 						return filterSkill.level <= Object.values(p.skills[index])[0];
-					}))
-					// true
+					})) &&
+					(this.personsFilterBy.availability >= p.availability)
 				);
 			},
 			checkAttributes(personAttribute) {
@@ -96,6 +97,7 @@
                 this.$store.dispatch("LOAD_PERSONS", 10);
 				setTimeout( () => {
 					this.$store.dispatch("ADD_SKILLS_TO_PERSONS", {skillNames:this.skills.map(skill =>skill.key), skillMaxLevel:5});
+					this.$store.dispatch("ADD_AVAILABILITY_TO_PERSONS");
 				}, 1000);
             },
 			updateIsLoading(isLoading) {

@@ -95,6 +95,11 @@ let store = new Vuex.Store({
         });
         person.skills = personSkills;
       });
+    },
+    ADD_AVAILABILITY_TO_PERSONS({commit, state}) {
+      state.persons.forEach( (person) => {
+        person.availability = Math.floor(Math.random()*2);
+      });
     }
   }
 });
@@ -103,6 +108,17 @@ let app = new Vue({
   el:'#app',
   store,
   render: h => h(App, {props: {name:'test'  /* :this.fetchPersons(10) */}}),
+  // mixins: [routingMixin]
 });
 app.$mount('#app');
 
+// app.component("home-page", {
+//   name: "HomePage",
+//   template: `
+//     <p style="text-align:center; top:0; bottom:0">
+//       <strong>Welcome to the team selector and builder.</strong> <br>
+//       <p><a href="/team-selector">Team Selector</a></p>
+//       <p><a href="/team-builder">Team Builder</a></p>
+//     </p>
+//   `
+// })

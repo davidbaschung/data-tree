@@ -1,20 +1,26 @@
 <template>
-    <div class="flex grid-section">
-        <div v-if="false">
-            <div>some store number : {{ $store.state.someNumber }}</div>
-            <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
-            <div>some number imported from props : {{ importedNumber }}</div> <!--(using mapState)-->
-            persons test : {{ $store.getters.persons }}
-            <br>
-            persons test : {{ printPersons }}
-        </div>
-        <div v-show="isLoading" v-for="i in 3" :key="i+'someSalt'" class="flex">
-            <div class="person-card" :style="disabledStyles(i)">
-                Loading...
+    <div>
+        <div class="background" v-once></div>
+        <div class="flex grid-section">
+            <div v-if="false" v-memo="[someNumber]">
+                <div>some store number : {{ $store.state.someNumber }}</div>
+                <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
+                <div>some number imported from props : {{ importedNumber }}</div> <!--(using mapState)-->
+                persons test : {{ $store.getters.persons }}
+                <br>
+                persons test : {{ printPersons }}
             </div>
-        </div>
-        <div v-show=" ! isLoading" v-for="(p, index) in persons" :key="index">
-            <person-card :person="p"></person-card>
+            <div v-show="isLoading" v-for="i in 3" :key="i+'someSalt'" class="flex">
+                <div class="person-card" :style="disabledStyles(i)">
+                    Loading...
+                </div>
+            </div>
+            <!-- TransitionGroup is used for lists only -->
+            <!-- <TransitionGroup name="grid" tag="div"> -->
+                <div v-show=" ! isLoading" v-for="(p, index) in persons" :key="index">
+                    <person-card :person="p"></person-card>
+                </div>
+            <!-- </TransitionGroup> -->
         </div>
     </div>
 </template>
@@ -96,12 +102,32 @@
             display: flex
         }
         .grid-section {
+            position:relative;
+            z-index: 1;
             flex-wrap: wrap;
         }
         // you wanted to know how to center vertically. Put the text in a block element and use flex on the parent. see scss below
+        
+        .background {
+            position:absolute;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("https://img.freepik.com/premium-vector/light-orange-watercolor-abstract-decorative-background_98551-694.jpg?w=2000");
+        }
+    
     }
 
     img {
         border-radius: 3px;
+    }
+
+    .grid-enter-active,
+    .grid-leave-active {
+        transform: scale(100%);
+    }
+    .grid-enter-from,
+    .grid-leave-to {
+        transform: scale(0%);
     }
 </style>
