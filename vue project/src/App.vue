@@ -7,22 +7,22 @@
 <script>
 	import myMixin from "@/components/myMixin.js";
 	import HomePage from "@/components/HomePage.vue"
-	import TeamSelector from "@/components/TeamSelector.vue";
+	const TeamSelectorLazilyLoaded = () => import("@/components/TeamSelector.vue");
 	import TeamBuilder from "@/components/HomePage.vue"
-
 
 	let routes = {
 		'/': HomePage,
 		'/home-page': HomePage,
-		'/team-selector' : TeamSelector,
+		'/team-selector' : TeamSelectorLazilyLoaded,
 		'/team-builder' : TeamBuilder,
 	}
 	
 	export default {
 		name: "App",
+		mixins: [myMixin],
 		components: {
 			HomePage,
-			TeamSelector,
+			TeamSelector: TeamSelectorLazilyLoaded,
 			TeamBuilder
 		},
 		data() {
@@ -35,10 +35,14 @@
 				return routes[this.currentPath.slice(1) || '/']
 			}
 		},
+		created() {
+			this.helloWorld();
+		},
 		mounted() {
 			window.addEventListener('hashchange', () => {
-				this.currentPath = window.location.hash
+				this.currentPath = window.location.hash;
 			} );
+			TeamSelectorLazilyLoaded();
 		}
 	};
 </script>

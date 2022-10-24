@@ -1,6 +1,8 @@
 <template>
+    <!-- TODO change main class -->
     <div class="main" @mousedown="sliderMousedown($event)" draggable="false">
         <div class="histogram">
+            <!-- TODO compute bin styles only once -->
             <div v-for="(bin,index) of bins" :key="index+'someBin'"
                 class="bin"
                 :style="binStyles[index]">
@@ -86,6 +88,7 @@ import { onUpdated } from 'vue';
                 // - v-style with scss, not just pure css (because of CSS variables)?
                 let styles = new Array(this.numberOfBins);
                 for (let i=0; i<this.numberOfBins; i++) {
+                    // TODO use 100% and remove calculation-track-width-css
                     styles[i] = `
                         width:calc( var(--calculation-track-width-css) / ${this.numberOfBins} );
                         height:${ (30/this.binsMaxAmount) * this.bins[i] + "px" };
@@ -115,12 +118,17 @@ import { onUpdated } from 'vue';
                 document.getElementsByClassName("right-handle")[0].classList.remove('hover-style');
                 document.getElementsByClassName("range")[0].classList.remove('hover-style');
             },
+            //TODO setlefthandle et setrighthandle, then use method to call lef/right elements inside the method body
             setHandlePosition(isLeftHandle, handleNewCentralPosition) {
+                //TODO use refs with $refs everywhere, getElementsByClassName can mess up with rendering
+                // NOTE : getElementyBy are expensive, using refs is better.
                 let leftHandleDomElement = document.getElementsByClassName( "left-handle" )[0];
                 let rightHandleDomElement = document.getElementsByClassName( "right-handle" )[0];
                 let rangeDomElement = document.getElementsByClassName( "range" )[0];
                 let trackDomElement = document.getElementsByClassName( "track" )[0];
-                let trackRect = trackDomElement.getBoundingClientRect();
+                //TODO not needed so much computation on mousemove
+                const trackRect = trackDomElement.getBoundingClientRect();
+                // TODO cache
                 let calculationTrackWidth =  trackRect.width  - this.barThickness - 4;
                 let calculationTrackLeft = trackRect.left + this.barThickness/2 + 2;
                 let valueInPixels = handleNewCentralPosition - calculationTrackLeft;
@@ -145,6 +153,7 @@ import { onUpdated } from 'vue';
                         rightHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
                         this.highValue = value;
                         this.$emit("highValue", value);
+                        // TODO emit value labeled object with v-model
                     }
                 }
                 if ( this.isClicked ) {
@@ -161,12 +170,14 @@ import { onUpdated } from 'vue';
             /* doesn't help because of scss variables precompiling */
         },
         mounted() {
+        // updated() {
             window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
             window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
             // this.$nextTick( () => {
+                // TODO check main div, is it updated later and re-rendering this here?
             setTimeout( () => { // TODO question no lifecycle hook for rendering? updated and nextTick are unsuseful
                 let mainDiv = document.getElementsByClassName('main')[0];
-                let trackBoundingClientRect = mainDiv.getBoundingClientRect();
+                const trackBoundingClientRect = mainDiv.getBoundingClientRect();
                 this.leftHandleCentralPosition = trackBoundingClientRect.x + this.handleRadius;
                 this.rightHandleCentralPosition = trackBoundingClientRect.x + trackBoundingClientRect.width - this.handleRadius;
                 this.setHandlePosition(false, this.rightHandleCentralPosition);
@@ -181,6 +192,7 @@ import { onUpdated } from 'vue';
 <style lang="scss">
     :root {
         $main-width: 10em;
+        // TODO don't hardcode, use 100% and set it in modular way
         $handle-radius: 8px;
         $calculation-track-width: calc($main-width - 2 * $handle-radius); //TODO question problem
         --calculation-track-width-css: #{$calculation-track-width};

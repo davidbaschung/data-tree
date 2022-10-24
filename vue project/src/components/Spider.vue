@@ -9,10 +9,12 @@
 
 <template>
     <div>
+        <!-- TODO move transitionStates in top component instead of writing it several times -->
         <div class="overlay" :class="transitionStates"></div>
         <div style="position:relative">
             <div class="spider-selector" :class="transitionStates" @click="openWidget">
                 <!-- <button @click="resetHandles"></button> -->
+                <!-- TODO make polygons flat -->
                 <div class="polygon" @dragover.prevent @drop="dropPolygon($event)" :level="5"></div> <!-- must remain placed first, for relative position in CSS-->
                 <span class="skill-name" :class="transitionStates" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">{{skill.label}}</span>
                 <div class="handle" :class="transitionStates" draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
@@ -36,6 +38,7 @@
             }
         },
         computed: {
+            // boolean classLists grouped are good
             isOpened() { return this.isOpen && ! this.isTransitioning},
             isClosed() { return ! this.isOpen && ! this.isTransitioning},
             isOpening() { return ! this.isOpen && this.isTransitioning },
@@ -84,6 +87,7 @@
                 let handleElement = document.querySelector(`.handle[skillAxisIndex='${skillAxisIndex}']`);
                 this.setHandlePositionByPlace(handleElement, parseInt(event.target.getAttribute("level")), skillAxisIndex);
             },
+            //TODO camelcase
             updatepolygonClass(context, className, isAppending=true) {
                 isAppending ? context.classList.add(className) : context.classList.remove(className);
                 if (context.children.length != 0)
@@ -134,7 +138,7 @@
                 let overlay = document.getElementsByClassName("overlay")[0];
                 this.isTransitioning = true;
                 this.isOpen = false;
-                let namePositions = [
+                const namePositions = [
                     ['150px', '20px'],
                     ['295px', '90px'],
                     ['285px', '270px'],
@@ -246,6 +250,7 @@
     .spider-selector.opening, .spider-selector.opened, .spider-selector.closing {
         z-index:3;
         position: absolute;
+        /* TODO relative is better than absolute */
         left: -155px;
         width: 290px;
         height: 290px;

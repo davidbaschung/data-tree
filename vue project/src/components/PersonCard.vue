@@ -1,7 +1,18 @@
 <template>
-    <div class="person-card">
-        <img :src="person.picture.medium" alt="portrait" />
-        <p>{{ person.name.first + " " + person.name.last }}</p>
+    <div>
+        <div class="person-card">
+            <img :src="person.picture.medium" alt="portrait" />
+            <p>{{ person.name.first + " " + person.name.last }}</p>
+        </div>
+
+        <!-- Vue 3 only -->
+        <!-- <Teleport to="div.selected-persons" :disabled=" ! isSelected">
+            <div>
+                <div style="width: 100px; height: 100px; background-color: red">
+                    Teleported
+                </div>
+            </div>
+        </Teleport> -->
     </div>
 </template>
 
@@ -10,7 +21,13 @@
         name: 'PersonCard',
         props: [
             'person'
-        ]
+        ],
+        data() {
+            return {
+                isSelected: true
+                //TODO false
+            }
+        }
     }
 </script>
 

@@ -1,13 +1,16 @@
-export const myMixin = {
+export default {
     data : function () {
         const someData = "someData";
     },
     methods : {
-        hellowWorld() {
-            console.log("hello world,");
+        helloWorld() {
+            console.log("hello world");
+        },
+        someTesting() { 
+            // describe() & test() in Vue 3
         }
     },
-    created() {
-        console.log("mixin component created");
+    created : function () {
+        console.log("local mixin component created");
     }
 }

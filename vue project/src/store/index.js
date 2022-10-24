@@ -112,6 +112,13 @@ let app = new Vue({
 });
 app.$mount('#app');
 
+const GlobalMixin = Vue.mixin({
+  created() {
+    console.log("global mixin");
+  }
+});
+const globalMixin = new GlobalMixin();
+
 // app.component("home-page", {
 //   name: "HomePage",
 //   template: `

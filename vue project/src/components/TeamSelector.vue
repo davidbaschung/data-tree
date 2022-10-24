@@ -5,6 +5,7 @@
 			<span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
 			<selector-section name="selector" @personsFiltering="setPersonsFilterBy" :skill-set="this.skills"></selector-section>
 			<grid-section name="results" :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
+			<!-- <selected-persons></selected-persons> -->
 		</div>
 	</KeepAlive>
 </template>
@@ -21,12 +22,14 @@
 	import { mapGetters } from 'vuex'
 	import SelectorSection from './SelectorSection.vue'
 	import GridSection from './GridSection.vue';
+	// import SelectedPersons from './SelectedPersons.vue';
 
 	export default {
 		name: 'TeamSelector',
 		components: {
 			'selector-section': SelectorSection,
-			'grid-section': GridSection
+			'grid-section': GridSection,
+			// 'selected-persons': SelectedPersons
 		},
 		data() {
 			return {

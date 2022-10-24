@@ -119,7 +119,7 @@
     methods: {
         onFilterChange(key, val) {
             console.log("filter has changed: ", key, val);
-            // TODO question : why ?
+            // TODO question : why ? => when we emit reactive object it's by reference, here it will mess with the vue component. Not necessary but more secure for APIs / framework
             // clone the object to a plain object, in order to keep reactivity encapsulated
             // this.$emit("input", { ...this.filterBy });
         },
@@ -192,6 +192,10 @@
   // better nest all elements within, so that the styles do not get applied globally
   // here - as you scpecified scope above it is safe, but when we use external styles files, better nest them to get them properly scoped
   // or add generic styles to stuff like input so that it is used accross
+
+  /* NOTE : have root class for each component, it makes it safe if we move this code to another scss file for this component.
+  Thus we avoid conflicts (e.g. several times "input", that appears too in other component).
+  SCSS can become really messy, better be careful and precise and define classes everyhwere. */
   input {
         background-color: whitesmoke;
         margin: 2px;
