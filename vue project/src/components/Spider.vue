@@ -8,17 +8,15 @@
 -->
 
 <template>
-    <div>
-        <!-- TODO move transitionStates in top component instead of writing it several times -->
-        <div class="overlay" :class="transitionStates"></div>
+    <div class="skills-spider" :class="transitionStates">
+        <div class="overlay"></div>
         <div style="position:relative">
-            <div class="spider-selector" :class="transitionStates" @click="openWidget">
+            <div class="spider-selector" @click="openWidget">
                 <!-- <button @click="resetHandles"></button> -->
-                <!-- TODO make polygons flat -->
-                <div class="polygon" @dragover.prevent @drop="dropPolygon($event)" :level="5"></div> <!-- must remain placed first, for relative position in CSS-->
-                <span class="skill-name" :class="transitionStates" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">{{skill.label}}</span>
-                <div class="handle" :class="transitionStates" draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
-                <div class="spider-web" :class="transitionStates"></div>
+                <div class="polygon" v-for="i in 6" :key="i" :level="6-i" :style="getPolygonStyle(6-i)" @dragover.prevent @drop="dropPolygon($event)"></div> <!-- must remain placed first, for relative position in CSS-->
+                <span class="skill-name" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">{{skill.label}}</span>
+                <div class="handle" draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
+                <div class="spider-web" ></div>
             </div>
         </div>
     </div>
@@ -54,7 +52,6 @@
         },
         emits: [ 'input' ],
         props: {
-            
             value : {
                 type: Array,
                 // default: () => [1,1,1,1,1,1]
@@ -71,28 +68,20 @@
             }
         },
         methods: {
-            addpolygon(context, countDown) {
-                if (countDown < 0) return;
-                let newpolygon = document.createElement("div");
-                newpolygon.setAttribute("level",countDown);
-                newpolygon.classList.add("polygon");
-                newpolygon.style.backgroundColor = countDown % 2 == 0 ?  this.secondaryColor : this.primaryColor;
-                if (countDown == 0)
-                    newpolygon.style.backgroundColor = "#b3ffb3";
-                context.appendChild(newpolygon);
-                this.addpolygon(newpolygon, --countDown);
+            getPolygonStyle(level) {
+                let properties = {
+                    width: `calc(100% - 2 * var(--current-polygon-padding) * ${ 5 - level } - 2 * var(--current-spider-padding) )`,
+                    height: `calc(100% - 2 * var(--current-polygon-padding) * ${ 5 - level } - 2 * var(--current-spider-padding) )`,
+                    top: `calc( var(--current-polygon-padding) * ${ 5 - level } + var(--current-spider-padding) )`,
+                    left: `calc( var(--current-polygon-padding) * ${ 5 - level } + var(--current-spider-padding) )`,
+                    'background-color': level == 0 ? "#b3ffb3" : level % 2 == 0 ?  this.secondaryColor : this.primaryColor,
+                }
+                return Object.entries(properties).map( ([key, value]) => key+":"+value ).join(";");
             },
             dropPolygon(event) {
                 const skillAxisIndex = event.dataTransfer.getData("skillAxisIndex");
                 let handleElement = document.querySelector(`.handle[skillAxisIndex='${skillAxisIndex}']`);
                 this.setHandlePositionByPlace(handleElement, parseInt(event.target.getAttribute("level")), skillAxisIndex);
-            },
-            //TODO camelcase
-            updatepolygonClass(context, className, isAppending=true) {
-                isAppending ? context.classList.add(className) : context.classList.remove(className);
-                if (context.children.length != 0)
-                    this.updatepolygonClass(context.children[0], className, isAppending);
-                void context.offsetWidth; /* referencing a position attribute without effect allow the CSS animation to restart on classList update */
             },
             setHandlePositionByPlace(handleElement, skillLevel, skillAxisIndex) {
                 this.skills[skillAxisIndex].level = skillLevel;
@@ -130,11 +119,13 @@
             dragStartHandle(event) {
                 event.dataTransfer.setData('skillAxisIndex', event.target.getAttribute("skillAxisIndex"));
             },
+            //TODO idea : offsetWidth for all elements in one method
             openWidget() {
                 let spider = document.getElementsByClassName("spider-selector")[0];
                 if (spider.classList.contains("opened")) return;
-                this.updatepolygonClass(spider, "closed", false);
-                this.updatepolygonClass(spider, "opened");
+                let root = document.documentElement;
+                root.style.setProperty("--current-polygon-padding", '20px');
+                root.style.setProperty("--current-spider-padding", '40px');
                 let overlay = document.getElementsByClassName("overlay")[0];
                 this.isTransitioning = true;
                 this.isOpen = false;
@@ -170,8 +161,6 @@
                 this.isTransitioning = true;
                 this.isOpen = true;
                 void overlay.offsetWidth;
-                this.updatepolygonClass(spider, "opened", false);
-                this.updatepolygonClass(spider, "closing");
                 document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
                     void element.offsetWidth;
                 });
@@ -182,7 +171,9 @@
                 setTimeout(() => {
                     this.isTransitioning = false;
                     this.isOpen = false;
-                    this.updatepolygonClass(spider, "closing", false), 500;
+                    let root = document.documentElement;                    
+                    root.style.setProperty("--current-polygon-padding", '2.5px');
+                    root.style.setProperty("--current-spider-padding", '2.5px');
                     void overlay.offsetWidth;
                     document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
                         void element.offsetWidth;
@@ -196,7 +187,7 @@
         },
         beforeCreate() {
             let root = document.documentElement;
-            let polygonWidth =  Math.cos( 30 / 180 * Math.PI );
+            let polygonWidth = Math.cos( 30 / 180 * Math.PI );
             let widthGap = (1 - polygonWidth) / 2;
             root.style.setProperty("--polygon-left", widthGap * 100 + '%')
             root.style.setProperty("--polygon-right", ( widthGap + polygonWidth ) * 100 + '%')
@@ -204,15 +195,12 @@
         mounted() {
             let spider = document.getElementsByClassName("spider-selector")[0];
             let root = document.documentElement;
-            root.style.setProperty("--basis-color", this.primaryColor);
-            let topPolygon = document.getElementsByClassName("polygon")[0];
-            this.addpolygon(topPolygon, 5 - 1);
             window.addEventListener("click", (event) => {
-                if ( ! spider.contains(event.target) && spider.classList.contains("opened"))
+                if ( ! (spider.contains(event.target)) && this.isOpened)
                     this.closeWidget();
             });
             window.addEventListener("keydown", (event) => {
-                if ( event.keyCode != event.code.escape || spider.classList.contains("opened")) return;
+                if ( event.keyCode != 27 || this.isClosed ) return;
                 this.closeWidget();
             });
 
@@ -223,6 +211,8 @@
 <style>
     :root {
         --handle-radius: 8px;
+        --current-polygon-padding: 2.5px;
+        --current-spider-padding: 2.5px;
     }
     @keyframes open__spider {
         from {
@@ -244,10 +234,10 @@
         box-shadow: 0px 0px 3px 0px cyan;
         border-radius: 30px;
     }
-    .spider-selector.opening {
+    .opening .spider-selector {
         animation: open__spider 0.5s normal;
     }
-    .spider-selector.opening, .spider-selector.opened, .spider-selector.closing {
+    .opening .spider-selector, .opened .spider-selector, .closing .spider-selector {
         z-index:3;
         position: absolute;
         /* TODO relative is better than absolute */
@@ -260,7 +250,7 @@
         outline-offset: -10px;
         box-shadow: none;
     }
-    .spider-selector.closing {
+    .closing .spider-selector {
         animation: open__spider 0.5s reverse;
     }
     @keyframes open__spider-label {
@@ -274,20 +264,18 @@
         text-align: center;
         user-select: none;
     }
-    .skill-name.opening {
+    .opening .skill-name {
         animation: open__spider-label 0.5s normal;
     }
-    .skill-name.opened {
+    .opened .skill-name {
         opacity: 100%;
     }
-    .skill-name.closing {
+    .closing .skill-name {
         animation: open__spider-label 0.5s reverse;
     }
     .polygon {
-        position: relative;
-        padding: 2.5px;
-        width: calc(100% - 2 * 2.5px);
-        height: calc(100% - 2 * 2.5px);
+        position: absolute;
+        z-index:3;
         clip-path: polygon(
             var(--polygon-left) 25%,
             var(--polygon-left) 75%,
@@ -297,12 +285,6 @@
             50% 0%
         );
         background-color: var(--basis-color);
-    }
-    .polygon.opened, .polygon.closing {
-        z-index:3;
-        padding: 20px;
-        width: calc(100% - 40px);
-        height: calc(100% - 40px);
     }
     .handle {
         z-index: 6;
@@ -314,7 +296,7 @@
         filter: brightness( 95% );
         border-radius: 8px;
     }
-    .handle.closed, .handle.opening {
+    .closed .handle, .opening .handle {
         display:none;
     }
     .handle:hover {
@@ -336,10 +318,10 @@
         opacity: 50%;
         background-color: pink;
     }
-    .spider-web.closed, .spider-web.opening {
+    .closed .spider-web, .opening .spider-web {
         display: none;
     }
-    .spider-web.opened {
+    .opened .spider-web {
         display: block;
     }
     @keyframes open__overlay {
@@ -356,18 +338,18 @@
         background-color: darkgreen;
         box-shadow: 0px 0px 10px 10px #0ff;
     }
-    .overlay.closed {
+    .closed > .overlay {
         display: none;
         opacity: 0%;
     }
-    .overlay.opened, .overlay.opening {
+    .opened > .overlay, .opening > .overlay {
         display: block;
         opacity: 50%;
     }
-    .overlay.opening {
+    .opening > .overlay {
         animation: open__overlay 0.5s normal;
     }
-    .overlay.closing {
+    .closing > .overlay {
         display: block;
         animation: open__overlay 0.5s reverse;
     }

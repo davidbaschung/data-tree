@@ -1,6 +1,6 @@
 <template>
     <!-- TODO change main class -->
-    <div class="main" @mousedown="sliderMousedown($event)" draggable="false">
+    <div class="double-range-slider" @mousedown="sliderMousedown($event)" draggable="false">
         <div class="histogram">
             <!-- TODO compute bin styles only once -->
             <div v-for="(bin,index) of bins" :key="index+'someBin'"
@@ -174,9 +174,9 @@ import { onUpdated } from 'vue';
             window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
             window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
             // this.$nextTick( () => {
-                // TODO check main div, is it updated later and re-rendering this here?
+            // TODO check main div, is it updated later and re-rendering this here?
             setTimeout( () => { // TODO question no lifecycle hook for rendering? updated and nextTick are unsuseful
-                let mainDiv = document.getElementsByClassName('main')[0];
+                let mainDiv = document.getElementsByClassName('double-range-slider')[0];
                 const trackBoundingClientRect = mainDiv.getBoundingClientRect();
                 this.leftHandleCentralPosition = trackBoundingClientRect.x + this.handleRadius;
                 this.rightHandleCentralPosition = trackBoundingClientRect.x + trackBoundingClientRect.width - this.handleRadius;

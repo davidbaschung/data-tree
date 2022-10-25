@@ -1,6 +1,6 @@
 <template>
 	<KeepAlive include="selector" exclude="results"> <!-- Could be used when the page has several tabs, e.g. one for TeamSelector and another new TeamBuilder -->
-		<div class="team-selection">
+		<div class="team-selector" >
 			<button @click="onReload">reload</button>
 			<span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
 			<selector-section name="selector" @personsFiltering="setPersonsFilterBy" :skill-set="this.skills"></selector-section>

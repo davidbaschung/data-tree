@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <!-- <div> -->
         <div class="person-card">
             <img :src="person.picture.medium" alt="portrait" />
             <p>{{ person.name.first + " " + person.name.last }}</p>
@@ -13,7 +13,7 @@
                 </div>
             </div>
         </Teleport> -->
-    </div>
+    <!-- </div> -->
 </template>
 
 <script>

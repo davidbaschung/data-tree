@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="grid-section">
         <div class="background" v-once></div>
         <div class="flex grid-section">
             <div v-if="false" v-memo="[someNumber]">

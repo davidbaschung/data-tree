@@ -1,5 +1,5 @@
 <template>
-    <div style="text-align:center">
+    <div class="home-page" style="text-align:center">
         <br>
         <strong>Welcome to the team selector and builder.</strong> <br>
         <!-- <p><a href="/team-selector">Team Selector</a></p>
