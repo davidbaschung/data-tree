@@ -1,6 +1,5 @@
 <template>
     <div class="selector-section">
-        <!-- TODO : use a custom v-model compoennt -->
         <input
             type="text"
             class="nameInput"
@@ -22,7 +21,6 @@
             <label for="women">Women</label> <br>
         </span>
         <select
-            id="myList"
             @change="onChange"
             v-model="filterBy.country"
         >
@@ -42,9 +40,10 @@
             </div>
         </div>
         <double-range-slider
-            :minValue="0" :maxValue="100" minLabel="0" maxLabel="100"
+            v-model="rangeValues"
+            :minValue="0" :maxValue="100"
+            minLabel="0" maxLabel="100"
             :dataArray="personsAgeList" :interval="10"
-            @lowValue="lowValueHandler" @highValue="highValueHandler"
         ></double-range-slider>
         <skills-spider v-model="filterBy.skills"></skills-spider>
         <div class="flex-grid">
@@ -70,6 +69,10 @@
     export default {
     name: "selector-section",
     props: ["skillSet"],
+    components: {
+        DoubleRangeSlider,
+        SkillsSpider
+    },
     data() {
         return {
             filterBy: {
@@ -79,14 +82,7 @@
                 country: "All",
                 minAge: 0,
                 maxAge: 100,
-                skills: [
-                    {key: "skill0", label:"skill 0", level:0},
-                    {key: "skill1", label:"skill 1", level:0},
-                    {key: "skill2", label:"skill 2", level:0},
-                    {key: "skill3", label:"skill 3", level:0},
-                    {key: "skill4", label:"skill 4", level:0},
-                    {key: "skill5", label:"skill 5", level:0}
-                ],
+                skills: undefined,
                 availability: 1,
             },
         };
@@ -98,6 +94,15 @@
             for (let p of this.persons)
                 ageList.push(p.dob.age);
             return ageList;
+        },
+        rangeValues: {
+            get() {
+                return {'lowValue':this.filterBy.minAge, 'highValue':this.filterBy.maxAge};
+            },
+            set(loHiValues) {
+                this.filterBy.minAge = loHiValues.lowValue;
+                this.filterBy.maxAge = loHiValues.highValue;
+            }
         }
     },
     watch: {
@@ -114,14 +119,18 @@
             },
             deep: true,
             immediate: true
+        },
+        rangeValues(loHiValues) {
+            this.filterBy.minAge = loHiValues.lowValue;
+            this.filterBy.maxAge = loHiValues.highValue;
         }
     },
     methods: {
         onFilterChange(key, val) {
             console.log("filter has changed: ", key, val);
-            // TODO question : why ? => when we emit reactive object it's by reference, here it will mess with the vue component. Not necessary but more secure for APIs / framework
             // clone the object to a plain object, in order to keep reactivity encapsulated
             // this.$emit("input", { ...this.filterBy });
+            // why ? => when we emit reactive object it's by reference, here it will mess with the vue component. Not necessary but more secure for APIs / framework
         },
         onChange(values) {
             console.log("change : ", values);
@@ -147,48 +156,31 @@
             // }
             // test();
         },
-        lowValueHandler(value) {
-            this.filterBy.minAge = value;
-        },
-        highValueHandler(value) {
-            this.filterBy.maxAge = value;
-        }
     },
     created() {
         this.updateFilters();
     },
-    components: {
-        DoubleRangeSlider,
-        SkillsSpider
-    }
 }
 </script>
-
-<style lang="scss">
-    /* not scoped styles do apply globally */
-    :root{
-        background-color: rgb(235, 215, 176);
-    }
-</style>
 
 <style scoped lang="scss">
     $lightgreenyellow : darken(mix(greenyellow,yellow), 12%);
 
     * {
-        background-color:darken(greenyellow, 20%);
-        color:lightyellow;
-        margin-right: 1em;
+        // bad practice
     }
+
     .selector-section {
         width:100%;
         display: flex;
+        background-color:darken(greenyellow, 20%);
 
         & * {
             vertical-align: middle;
+            color:lightyellow;
+            margin-right: 1em;
         }
-    }
 
-    // TODO question : means scoping otherwise inside the scss?
   // better nest all elements within, so that the styles do not get applied globally
   // here - as you scpecified scope above it is safe, but when we use external styles files, better nest them to get them properly scoped
   // or add generic styles to stuff like input so that it is used accross
@@ -215,6 +207,12 @@
     select {
         background-color: #{$lightgreenyellow};
         border-radius: 8px;
+        width: 100px;
+        outline: none;
+
+        &:focus, &:active, &::selection {
+            border: 2px solid white;
+        }
 
         option {
             background-color: #{$lightgreenyellow};
@@ -236,6 +234,7 @@
     }
     .flex-column {
         display:flex;
+    }
     }
 </style>
 

@@ -1,19 +1,18 @@
 <template>
-    <!-- TODO change main class -->
-    <div class="double-range-slider" @mousedown="sliderMousedown($event)" draggable="false">
+    <div ref="doubleRangeSlider" class="double-range-slider" @mousedown="sliderMousedown($event)" draggable="false">
         <div class="histogram">
-            <!-- TODO compute bin styles only once -->
-            <div v-for="(bin,index) of bins" :key="index+'someBin'"
+            <!-- TODO??? compute bin styles only once -->
+            <div v-for="(bin,index) of binsHeight" :key="index+'someBin'"
                 class="bin"
                 :style="binStyles[index]">
                 <!-- FIXME assign height by passing it as parameter -->
             </div>
         </div>
         <div class="slider">
-            <div class="track"></div>
-            <div class="range"></div>
-            <div class="left-handle"></div>
-            <div class="right-handle"></div>
+            <div ref="track" class="track"></div>
+            <div ref="range" class="range"></div>
+            <div ref="leftHandle" class="left-handle"></div>
+            <div ref="rightHandle" class="right-handle"></div>
         </div>
     </div>
 </template>
@@ -24,6 +23,7 @@ import { onUpdated } from 'vue';
     export default {
         name: 'double-range-slider',
         props: {
+            value: Object,
             minValue: Number,
             maxValue: Number,
             minLabel: String,
@@ -34,24 +34,16 @@ import { onUpdated } from 'vue';
                 default: 1
             },
         },
+        emits: [ 'input' ],
         watch: {
-            minValue: {
-                handler(value) {
-                    this.lowValue = value;
+            value: {
+                handler(loHiValues) {
+                    this.lowValue = loHiValues.lowValue;
+                    this.highValue = loHiValues.highValue;
                 },
                 immediate: true
             },
-            maxValue: {
-                handler(value) {
-                    this.highValue = value;
-                },
-                immediate: true
-            }
         },
-        // model: {
-        //     prop: 'value',
-        //     event: 'input'
-        // },
         data() {
             return {
                 isLeftHandle: Boolean,
@@ -72,26 +64,24 @@ import { onUpdated } from 'vue';
                 let range = this.maxValue - this.minValue;
                 return Math.ceil(range / this.interval);
             },
-            bins() {
-                let bins = new Array(this.numberOfBins).fill(0);
+            binsHeight() {
+                let binsHeight = new Array(this.numberOfBins).fill(0);
                 for (const [index, data] of this.dataArray.entries())
-                    bins[ Math.floor((data - this.minValue) / this.interval) ]++;
-                return bins;
+                    binsHeight[ Math.floor((data - this.minValue) / this.interval) ]++;
+                return binsHeight;
             },
             binsMaxAmount() {
-                return Math.max(...this.bins);
+                return Math.max(...this.binsHeight);
             },
             binStyles() {
-                // TODO question :
                 // - reuse style tag variables?
                 // - pass variables to CSS with JS initially (without getComputedStyles)?
                 // - v-style with scss, not just pure css (because of CSS variables)?
                 let styles = new Array(this.numberOfBins);
                 for (let i=0; i<this.numberOfBins; i++) {
-                    // TODO use 100% and remove calculation-track-width-css
                     styles[i] = `
-                        width:calc( var(--calculation-track-width-css) / ${this.numberOfBins} );
-                        height:${ (30/this.binsMaxAmount) * this.bins[i] + "px" };
+                        width:calc( 100% / ${this.numberOfBins} );
+                        height:${ (30/this.binsMaxAmount) * this.binsHeight[i] + "px" };
                     `;
                 }
                 return styles;
@@ -100,90 +90,97 @@ import { onUpdated } from 'vue';
                 if ( ! (this.minValue < this.maxValue))
                     console.log("WARNING : min is bigger than max");
                 return null;
+            },
+            calculationTrackWidth() {
+                // let trackDomElement = document.getElementsByClassName( "track" )[0];
+                // const trackRect = trackDomElement.getBoundingClientRect();
+                return this.trackRect.width  - this.barThickness - 4;
+            },
+            calculationTrackLeft() {
+                // let trackDomElement = document.getElementsByClassName( "track" )[0];
+                // const trackRect = trackDomElement.getBoundingClientRect();
+                return this.trackRect.left + this.barThickness/2 + 2;
+            },
+            trackRect() {
+                return this.$refs.track.getBoundingClientRect();
             }
         },
         methods: {
             sliderMousedown(event) {
                 this.isClicked = true;
                 this.isLeftHandle = Math.abs(event.pageX - this.leftHandleCentralPosition) < Math.abs(event.pageX - this.rightHandleCentralPosition);
-                this.setHandlePosition(this.isLeftHandle, event.pageX);
+                this.isLeftHandle ? this.setLeftHandlePosition(event.pageX) : this.setRightHandlePosition(event.pageX);
             },
             sliderDrag(event) {
                 if ( ! this.isClicked ) return;
-                this.setHandlePosition(this.isLeftHandle, event.pageX);
+                this.isLeftHandle ? this.setLeftHandlePosition(event.pageX) : this.setRightHandlePosition(event.pageX);
             },
             sliderMouseup(event) {
                 this.isClicked = false;
-                document.getElementsByClassName("left-handle")[0].classList.remove('hover-style');
-                document.getElementsByClassName("right-handle")[0].classList.remove('hover-style');
-                document.getElementsByClassName("range")[0].classList.remove('hover-style');
+                this.$refs.leftHandle.classList.remove('hover-style');
+                this.$refs.rightHandle.classList.remove('hover-style');
+                this.$refs.range.classList.remove('hover-style');
             },
-            //TODO setlefthandle et setrighthandle, then use method to call lef/right elements inside the method body
+            setLeftHandlePosition(handleNewCentralPosition) {
+                this.setHandlePosition(true, handleNewCentralPosition);
+            },
+            setRightHandlePosition(handleNewCentralPosition) {
+                this.setHandlePosition(false, handleNewCentralPosition);
+            },
             setHandlePosition(isLeftHandle, handleNewCentralPosition) {
-                //TODO use refs with $refs everywhere, getElementsByClassName can mess up with rendering
-                // NOTE : getElementyBy are expensive, using refs is better.
-                let leftHandleDomElement = document.getElementsByClassName( "left-handle" )[0];
-                let rightHandleDomElement = document.getElementsByClassName( "right-handle" )[0];
-                let rangeDomElement = document.getElementsByClassName( "range" )[0];
-                let trackDomElement = document.getElementsByClassName( "track" )[0];
-                //TODO not needed so much computation on mousemove
-                const trackRect = trackDomElement.getBoundingClientRect();
-                // TODO cache
-                let calculationTrackWidth =  trackRect.width  - this.barThickness - 4;
-                let calculationTrackLeft = trackRect.left + this.barThickness/2 + 2;
-                let valueInPixels = handleNewCentralPosition - calculationTrackLeft;
-                let value = (this.maxValue - this.minValue) * (valueInPixels/calculationTrackWidth);
-                value =
-                    value < this.minValue ? this.minValue
-                    : value > this.maxValue ? this.maxValue
-                    : isLeftHandle && value > this.highValue ? this.highValue
-                    : ! isLeftHandle && value < this.lowValue ? this.lowValue
-                    : value;
+                // NOTE : getElementyBy are expensive, using refs is better. Use refs with $refs everywhere, getElementsByClassName can mess up with rendering
+                let valueInPixels = handleNewCentralPosition - this.calculationTrackLeft;
+                let currentValue = (this.maxValue - this.minValue) * (valueInPixels/this.calculationTrackWidth);
+                currentValue =
+                    currentValue < this.minValue ? this.minValue
+                    : currentValue > this.maxValue ? this.maxValue
+                    : isLeftHandle && currentValue > this.highValue ? this.highValue
+                    : ! isLeftHandle && currentValue < this.lowValue ? this.lowValue
+                    : currentValue;
                 if (isLeftHandle) {
-                    if (handleNewCentralPosition>=trackRect.x+this.barThickness/2 && handleNewCentralPosition<this.rightHandleCentralPosition) {
+                    if (handleNewCentralPosition>=this.trackRect.x+this.barThickness/2 && handleNewCentralPosition<this.rightHandleCentralPosition) {
                         this.leftHandleCentralPosition = handleNewCentralPosition;
-                        leftHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
-                        rangeDomElement.style.left = handleNewCentralPosition + 'px';
-                        this.lowValue = value;
-                        this.$emit("lowValue", value);
+                        this.$refs.leftHandle.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                        this.$refs.range.style.left = handleNewCentralPosition + 'px';
+                        this.lowValue = currentValue;
+                        this.$emit("input", { ...{"lowValue":currentValue, "highValue":this.highValue}});
                     }
                 } else if ( ! isLeftHandle) {
-                    if (handleNewCentralPosition<=trackRect.x+trackRect.width-this.barThickness/2 && handleNewCentralPosition>this.leftHandleCentralPosition) {
+                    if (handleNewCentralPosition<=this.trackRect.x+this.trackRect.width-this.barThickness/2 && handleNewCentralPosition>this.leftHandleCentralPosition) {
                         this.rightHandleCentralPosition = handleNewCentralPosition;
-                        rightHandleDomElement.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
-                        this.highValue = value;
-                        this.$emit("highValue", value);
-                        // TODO emit value labeled object with v-model
+                        this.$refs.rightHandle.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
+                        this.highValue = currentValue;
+                        this.$emit("input", { ...{"lowValue":this.lowValue, "highValue":currentValue}});
                     }
                 }
                 if ( this.isClicked ) {
-                    rangeDomElement.classList.add('hover-style');
-                    leftHandleDomElement.classList.add('hover-style');
-                    rightHandleDomElement.classList.add('hover-style');
+                    this.$refs.range.classList.add('hover-style');
+                    this.$refs.leftHandle.classList.add('hover-style');
+                    this.$refs.rightHandle.classList.add('hover-style');
                 }
-                rangeDomElement.style.width = this.rightHandleCentralPosition - this.leftHandleCentralPosition + 'px';
+                this.$refs.range.style.width = this.rightHandleCentralPosition - this.leftHandleCentralPosition + 'px';
             }
         },
         beforeCreate() {
-            // let root = document.documentElement;
-            // root.style.setProperty("--handle-radius", "25px;")
+            let root = document.documentElement;
+
+            root.style.setProperty("--main-width", "10em");
+            root.style.setProperty("--handle-radius", "8px");
+            root.style.setProperty("--calculation-track-width", "calc(var(--main-width) - 2 * var(--handle-radius))");
+
             /* doesn't help because of scss variables precompiling */
         },
         mounted() {
-        // updated() {
             window.addEventListener("mousemove", (event) => { this.sliderDrag(event)});
             window.addEventListener('mouseup', (event) => { this.sliderMouseup(event) });
-            // this.$nextTick( () => {
-            // TODO check main div, is it updated later and re-rendering this here?
-            setTimeout( () => { // TODO question no lifecycle hook for rendering? updated and nextTick are unsuseful
-                let mainDiv = document.getElementsByClassName('double-range-slider')[0];
-                const trackBoundingClientRect = mainDiv.getBoundingClientRect();
-                this.leftHandleCentralPosition = trackBoundingClientRect.x + this.handleRadius;
-                this.rightHandleCentralPosition = trackBoundingClientRect.x + trackBoundingClientRect.width - this.handleRadius;
-                this.setHandlePosition(false, this.rightHandleCentralPosition);
-                this.setHandlePosition(true, this.leftHandleCentralPosition);
-            }, 600);
-            // });
+            this.$nextTick( () => {
+                // let mainDiv = this.$refs.doubleRangeSlider;
+                const mainDivBoundingClientRect = this.$refs.doubleRangeSlider.getBoundingClientRect();
+                this.leftHandleCentralPosition = mainDivBoundingClientRect.x + this.handleRadius;
+                this.rightHandleCentralPosition = mainDivBoundingClientRect.x + mainDivBoundingClientRect.width - this.handleRadius;
+                this.setLeftHandlePosition(this.leftHandleCentralPosition);
+                this.setRightHandlePosition(this.rightHandleCentralPosition);
+            });
         },
     }
 
@@ -191,15 +188,14 @@ import { onUpdated } from 'vue';
 
 <style lang="scss">
     :root {
-        $main-width: 10em;
-        // TODO don't hardcode, use 100% and set it in modular way
-        $handle-radius: 8px;
-        $calculation-track-width: calc($main-width - 2 * $handle-radius); //TODO question problem
-        --calculation-track-width-css: #{$calculation-track-width};
+        // modular variables set at runtime :
+        // --handle-radius
+        // --main-width
+        // --calculation-track-width
+        width: 100%;
     }
     div {
         margin: 0px;
-        $main-width: 10em;
 
         & .main {
             display: flex;
@@ -209,9 +205,11 @@ import { onUpdated } from 'vue';
             min-height: 1em;
             -webkit-user-select: none;
             user-select: none;
+            width: var(--calculation-track-width);
         }
 
         & .histogram {
+            width: var(--calculation-track-width);
             max-width: 10em;
             display:block;
             
@@ -224,9 +222,7 @@ import { onUpdated } from 'vue';
         }
 
         & .slider {
-            $handle-radius: 8px;
             $bar-thickness: 5px;
-            $calculation-track-width: calc($main-width - 2 * $handle-radius);
 
             %hover-style {
                 opacity: 66%;
@@ -238,32 +234,32 @@ import { onUpdated } from 'vue';
 
             & .track {
                 position: relative;
-                width: calc(100% - 2*$handle-radius + $bar-thickness);
+                width: calc(100% - 2* var(--handle-radius) + $bar-thickness);
                 /* determinant filtering width : 100% -2*handle-radius */
                 height: $bar-thickness;
                 background-color: whitesmoke;
                 border-radius: 3px; 
-                bottom : $handle-radius - $bar-thickness/2;
-                left: $handle-radius - $bar-thickness/2;
+                bottom : calc( var(--handle-radius) - $bar-thickness/2 );
+                left: calc( var(--handle-radius) - $bar-thickness/2 );
             }
 
             & .range {
                 position: absolute;
+                translate: 0 calc(-1*var(--handle-radius) - $bar-thickness/2);
                 // width determined at runtime
                 height: $bar-thickness;
                 background-color: darken(dodgerblue,10%);
-                translate: 0 (-1*$handle-radius -$bar-thickness/2);
             }
 
             & .left-handle, .right-handle {
                 position: absolute;
-                width: 2 * $handle-radius;
-                height: 2 * $handle-radius;
-                border-radius: $handle-radius;
+                width: calc( 2 * var(--handle-radius) );
+                height: calc( 2 * var(--handle-radius) );
+                border-radius: var(--handle-radius);
                 background-color: darken(dodgerblue,5%);
-                translate: 0 -2*$handle-radius;
-                padding:0px;
-                margin:0px;
+                translate: 0 calc( -2 * var(--handle-radius) );
+                padding: 0px;
+                margin: 0px;
 
                 &:hover {
                     @extend %hover-style;
@@ -272,7 +268,6 @@ import { onUpdated } from 'vue';
 
             & > .hover-style {
                 @extend %hover-style;
-                // background-color: turquoise;
             }
             
         }

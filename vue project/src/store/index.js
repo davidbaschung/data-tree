@@ -24,10 +24,6 @@ let store = new Vuex.Store({
     nativesCount: 0
   },
   getters: {
-    citiesSentence() {
-      // ( TODO ) reduce Set
-      // return "The people live in the cities of " + store.state.cities.join(' ');
-    },
     persons() {
       return store.state.persons;
     },

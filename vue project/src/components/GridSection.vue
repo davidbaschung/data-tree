@@ -79,7 +79,7 @@
         methods: {
             disabledStyles(index) {
                 let start = new Date();
-                console.log("Loading started at : " + start);
+                // console.log("Loading started at : " + start);
                 let opacity = Math.pow(0.6, index);
 
                 return {
@@ -94,6 +94,11 @@
 </script>
 
 <style lang="scss">
+
+    :root {
+        background-color: rgb(235, 215, 176);
+    }
+    
     div {
         // font-family: Arial, Helvetica, sans-serif;
         // font-size: 10pt;

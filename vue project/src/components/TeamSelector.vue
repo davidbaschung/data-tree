@@ -3,7 +3,7 @@
 		<div class="team-selector" >
 			<button @click="onReload">reload</button>
 			<span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
-			<selector-section name="selector" @personsFiltering="setPersonsFilterBy" :skill-set="this.skills"></selector-section>
+			<selector-section name="selector" @personsFiltering="setPersonsFilterBy" :skillSet="this.skills"></selector-section>
 			<grid-section name="results" :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
 			<!-- <selected-persons></selected-persons> -->
 		</div>
@@ -64,7 +64,7 @@
 				this.refreshKey++;
 			},
 			filters(p) {
-				if (this.personsFilterBy.skills==undefined || p.skills==undefined) return true; // TODO remove if ADD_SKILLS_TO_PERSONS callback possible from VueX instead of setTimeout
+				if (this.personsFilterBy.skills==undefined || p.skills==undefined) return true;
 				return (
 					(this.checkAttributes(p)) &&
 					(this.personsFilterBy.men ? true : !(p.gender == 'male')) &&

@@ -22,9 +22,10 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 
     export default {
+
         name: 'skills-spider',
         data() {
             return {
@@ -54,7 +55,21 @@
         props: {
             value : {
                 type: Array,
-                // default: () => [1,1,1,1,1,1]
+                validator: (val) => 
+                    val instanceof Array && val.every( skill => 
+                        typeof skill.key == 'string' || skill.key instanceof String
+                        && typeof skill.label == 'string' || skill.label instanceof String
+                        && typeof skill.level == 'number' && skill.level % 1 === 0
+                    ),
+                required: false,
+                default: () => [
+                    {key: "skill0", label:"skill 0", level:0},
+                    {key: "skill1", label:"skill 1", level:0},
+                    {key: "skill2", label:"skill 2", level:0},
+                    {key: "skill3", label:"skill 3", level:0},
+                    {key: "skill4", label:"skill 4", level:0},
+                    {key: "skill5", label:"skill 5", level:0}
+                ]
             }
         },
         watch: {
@@ -63,8 +78,7 @@
                     this.skills = value;
                 },
                 deep: true,
-                immediate: true
-                // TODO basic data controlling and typing in watcher or prop declaration
+                immediate: true,
             }
         },
         methods: {
@@ -108,7 +122,6 @@
                     let clipPath = "polygon(";
                     const handles = document.getElementsByClassName("handle");
                     for (let h of handles) {
-                        h.offsetWidth;
                         const hRect = h.getBoundingClientRect();
                         clipPath += (hRect.x-spiderSelectorRect.x+8) + "px " + (hRect.y-spiderSelectorRect.y+8) + "px, ";
                     }
@@ -119,7 +132,6 @@
             dragStartHandle(event) {
                 event.dataTransfer.setData('skillAxisIndex', event.target.getAttribute("skillAxisIndex"));
             },
-            //TODO idea : offsetWidth for all elements in one method
             openWidget() {
                 let spider = document.getElementsByClassName("spider-selector")[0];
                 if (spider.classList.contains("opened")) return;
@@ -150,33 +162,27 @@
                         this.setHandlePositionByPlace(element, this.skills[index].level, index);
                         element.skillAxisIndex = parseInt(index);
                         spider.focus();
-                        void overlay.offsetWidth;
                     });
                 }, 500);
             },
             closeWidget() {
                 let spider = document.getElementsByClassName("spider-selector")[0];
-                void spider.offsetWidth;
                 let overlay = document.getElementsByClassName("overlay")[0];
                 this.isTransitioning = true;
                 this.isOpen = true;
-                void overlay.offsetWidth;
                 document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
-                    void element.offsetWidth;
                 });
                 setTimeout( () => { /* hides spider for 30ms to solve the glitch flashing the opened spider */
                     overlay.setAttribute("style","display:none");
                     spider.setAttribute("style","display:none");
                 }, 485);
                 setTimeout(() => {
-                    this.isTransitioning = false;
-                    this.isOpen = false;
-                    let root = document.documentElement;                    
-                    root.style.setProperty("--current-polygon-padding", '2.5px');
-                    root.style.setProperty("--current-spider-padding", '2.5px');
-                    void overlay.offsetWidth;
-                    document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
-                        void element.offsetWidth;
+                        this.isTransitioning = false;
+                        this.isOpen = false;
+                        let root = document.documentElement;                    
+                        root.style.setProperty("--current-polygon-padding", '2.5px');
+                        root.style.setProperty("--current-spider-padding", '2.5px');
+                        document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
                     });
                 }, 500);
                 setTimeout( () => {
@@ -240,8 +246,7 @@
     .opening .spider-selector, .opened .spider-selector, .closing .spider-selector {
         z-index:3;
         position: absolute;
-        /* TODO relative is better than absolute */
-        left: -155px;
+        left: -166px;
         width: 290px;
         height: 290px;
         padding: 40px;
