@@ -74,9 +74,6 @@ import { onUpdated } from 'vue';
                 return Math.max(...this.binsHeight);
             },
             binStyles() {
-                // - reuse style tag variables?
-                // - pass variables to CSS with JS initially (without getComputedStyles)?
-                // - v-style with scss, not just pure css (because of CSS variables)?
                 let styles = new Array(this.numberOfBins);
                 for (let i=0; i<this.numberOfBins; i++) {
                     styles[i] = `
@@ -92,13 +89,9 @@ import { onUpdated } from 'vue';
                 return null;
             },
             calculationTrackWidth() {
-                // let trackDomElement = document.getElementsByClassName( "track" )[0];
-                // const trackRect = trackDomElement.getBoundingClientRect();
                 return this.trackRect.width  - this.barThickness - 4;
             },
             calculationTrackLeft() {
-                // let trackDomElement = document.getElementsByClassName( "track" )[0];
-                // const trackRect = trackDomElement.getBoundingClientRect();
                 return this.trackRect.left + this.barThickness/2 + 2;
             },
             trackRect() {

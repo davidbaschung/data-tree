@@ -42,7 +42,16 @@
                     {key:"powerpoint", label:"Powerpoint", level:0},
                     {key:"rhinoceros", label:"Rhinoceros", level:0},
                     {key:"vray", label:"Vray", level:0},
-                    {key:"alias", label:"Alias", level:0}
+                    {key:"alias", label:"Alias", level:0},
+					{key:"sketchup", label:"Sketchup", level:0},
+					{key:"archicad", label:"ArchiCAD", level:0},
+					{key:"3dsmax", label:"3dsMax", level:0},
+					{key:"lightroom", label:"Lightroom", level:0},
+                    {key:"autocad", label:"AutoCAD", level:0},
+					{key:"revit", label:"Revit", level:0},
+					{key:"elitecad", label:"EliteCAD", level:0},
+					{key:"blender", label:"Blender", level:0},
+					{key:"premierepro", label:"Premiere PRO", level:0}
                 ]
 			}
 		},

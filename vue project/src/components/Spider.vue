@@ -1,20 +1,19 @@
-<!-- details TODO possibly
+<!-- TODO details possibly
     adjust sliderRange extremas
-    adjust widget absolute left
     dégradé couleur levels : 0 -> rouge, 5 -> vert
-    animation des poignées
-    opening vers le bas ou centre-gauche selon largeur
-    skills setting callback
 -->
 
 <template>
     <div class="skills-spider" :class="transitionStates">
         <div class="overlay"></div>
         <div style="position:relative">
-            <div class="spider-selector" @click="openWidget">
-                <!-- <button @click="resetHandles"></button> -->
-                <div class="polygon" v-for="i in 6" :key="i" :level="6-i" :style="getPolygonStyle(6-i)" @dragover.prevent @drop="dropPolygon($event)"></div> <!-- must remain placed first, for relative position in CSS-->
-                <span class="skill-name" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">{{skill.label}}</span>
+            <div class="spider-selector" ref="spiderSelector" @click="openWidget">
+                <div class="polygon" v-for="i in 6" :key="i" :level="6-i" :ref="`level${6-i}`" :style="getPolygonStyle(6-i)" @dragover.prevent @drop="dropPolygon($event)"></div> <!-- must remain placed first, for relative position in CSS-->
+                <span class="skill-name" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">
+                    <div class="absoluteCenteredText">
+                        {{skill.label}}
+                    </div>
+                </span>
                 <div class="handle" draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
                 <div class="spider-web" ></div>
             </div>
@@ -22,10 +21,9 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
 
     export default {
-
         name: 'skills-spider',
         data() {
             return {
@@ -34,6 +32,8 @@
                 skills: [],
                 isOpen: false,
                 isTransitioning: false,
+                polygonClipPath: String,
+                namesPositions: []
             }
         },
         computed: {
@@ -49,7 +49,7 @@
                     opening:this.isOpening,
                     closing:this.isClosing
                 }
-            }
+            },
         },
         emits: [ 'input' ],
         props: {
@@ -89,8 +89,36 @@
                     top: `calc( var(--current-polygon-padding) * ${ 5 - level } + var(--current-spider-padding) )`,
                     left: `calc( var(--current-polygon-padding) * ${ 5 - level } + var(--current-spider-padding) )`,
                     'background-color': level == 0 ? "#b3ffb3" : level % 2 == 0 ?  this.secondaryColor : this.primaryColor,
+                    'clip-path': this.polygonClipPath,
                 }
                 return Object.entries(properties).map( ([key, value]) => key+":"+value ).join(";");
+            },
+            setPolygonClipPath() {
+                let polygonClipPath = "polygon(";
+                for (let i=0; i<this.skills.length; i++) {
+                    const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / this.skills.length * i;
+                    const extremaPosition = {
+                        x: (50 + Math.cos(axisAngleRad) * 50).toFixed(2),
+                        y: (50 + Math.sin(axisAngleRad) * 50).toFixed(2),
+                    };
+                    polygonClipPath += `${extremaPosition.x}% ${extremaPosition.y}%, `;
+                }
+                polygonClipPath = polygonClipPath.substring(0,polygonClipPath.length-2) + ")";
+                this.polygonClipPath = polygonClipPath;
+            },
+            setNamesPositions() {
+                let positions = [];
+                const middleWidth = this.$refs.level5[0].getBoundingClientRect().width/2;
+                const containerMiddleWidth = this.$refs.spiderSelector.getBoundingClientRect().width/2;
+                for (let i=0; i<this.skills.length; i++) {
+                    const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / this.skills.length * i;
+                    const namePos = [
+                        (containerMiddleWidth + Math.cos(axisAngleRad) * (middleWidth + 50) + "" ).substring(0,6) + "px",
+                        (containerMiddleWidth + Math.sin(axisAngleRad) * (middleWidth + 15 + 20 * Math.abs(Math.cos(axisAngleRad))) + "" ).substring(0,6)  + "px",
+                    ];
+                    positions[i] = namePos;
+                }
+                this.namesPositions = positions;
             },
             dropPolygon(event) {
                 const skillAxisIndex = event.dataTransfer.getData("skillAxisIndex");
@@ -104,8 +132,8 @@
                 const polygonRect = targetPolygon.getBoundingClientRect();
                 const spiderRect = document.getElementsByClassName("spider-selector")[0].getBoundingClientRect();
                 const center = {x:spiderRect.width/2, y:spiderRect.height/2};
-                const distance = polygonRect.height/2 - 10//TODO for polygons : compute padding*levels and centerPadding
-                const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / 6 * skillAxisIndex;
+                const distance = polygonRect.height/2 - 10
+                const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / this.skills.length * skillAxisIndex;
                 const handlePosition = {
                     x: center.x + Math.cos(axisAngleRad) * distance,
                     y: center.y + Math.sin(axisAngleRad) * distance
@@ -137,24 +165,9 @@
                 if (spider.classList.contains("opened")) return;
                 let root = document.documentElement;
                 root.style.setProperty("--current-polygon-padding", '20px');
-                root.style.setProperty("--current-spider-padding", '40px');
-                let overlay = document.getElementsByClassName("overlay")[0];
+                root.style.setProperty("--current-spider-padding", '110px');
                 this.isTransitioning = true;
                 this.isOpen = false;
-                const namePositions = [
-                    ['150px', '20px'],
-                    ['295px', '90px'],
-                    ['285px', '270px'],
-                    ['150px', '335px'],
-                    ['18px', '250px'],
-                    ['18px', '100px'],
-                ];
-                document.querySelectorAll(".skill-name, .handle").forEach( (element, index) => {
-                    if (element.classList.contains('skill-name')) {
-                        element.style.left = namePositions[index][0];
-                        element.style.top = namePositions[index][1];
-                    }
-                });
                 setTimeout( () => {
                     document.querySelectorAll(".handle").forEach( (element, index) => {
                         this.isTransitioning = false;
@@ -163,6 +176,13 @@
                         element.skillAxisIndex = parseInt(index);
                         spider.focus();
                     });
+                    this.setNamesPositions();
+                    document.querySelectorAll(".skill-name, .handle").forEach( (element, index) => {
+                        if (element.classList.contains('skill-name')) {
+                            element.style.left = this.namesPositions[index][0];
+                            element.style.top = this.namesPositions[index][1];
+                        }
+                    });
                 }, 500);
             },
             closeWidget() {
@@ -170,8 +190,6 @@
                 let overlay = document.getElementsByClassName("overlay")[0];
                 this.isTransitioning = true;
                 this.isOpen = true;
-                document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
-                });
                 setTimeout( () => { /* hides spider for 30ms to solve the glitch flashing the opened spider */
                     overlay.setAttribute("style","display:none");
                     spider.setAttribute("style","display:none");
@@ -182,8 +200,6 @@
                         let root = document.documentElement;                    
                         root.style.setProperty("--current-polygon-padding", '2.5px');
                         root.style.setProperty("--current-spider-padding", '2.5px');
-                        document.querySelectorAll(".skill-name, .handle").forEach( (element) => {
-                    });
                 }, 500);
                 setTimeout( () => {
                     overlay.removeAttribute("style");
@@ -191,12 +207,9 @@
                 }, 515);
             }
         },
-        beforeCreate() {
-            let root = document.documentElement;
-            let polygonWidth = Math.cos( 30 / 180 * Math.PI );
-            let widthGap = (1 - polygonWidth) / 2;
-            root.style.setProperty("--polygon-left", widthGap * 100 + '%')
-            root.style.setProperty("--polygon-right", ( widthGap + polygonWidth ) * 100 + '%')
+        created() {
+            for (let i=0; i<this.skills.length; i++)
+                this.namesPositions[i] = ["0px", "0px"];
         },
         mounted() {
             let spider = document.getElementsByClassName("spider-selector")[0];
@@ -209,7 +222,7 @@
                 if ( event.keyCode != 27 || this.isClosed ) return;
                 this.closeWidget();
             });
-
+            this.setPolygonClipPath();
         }
     }
 </script>
@@ -223,7 +236,7 @@
     @keyframes open__spider {
         from {
             transform: scale(20%);
-            top: -147px;
+            top: -215px;
             border-radius: 65px;
         }
         to {
@@ -246,9 +259,9 @@
     .opening .spider-selector, .opened .spider-selector, .closing .spider-selector {
         z-index:3;
         position: absolute;
-        left: -166px;
-        width: 290px;
-        height: 290px;
+        left: -250px;
+        width: 460px;
+        height: 460px;
         padding: 40px;
         background-color: dodgerblue !important;
         outline: 10px solid royalblue;
@@ -265,12 +278,18 @@
     .skill-name {
         z-index: 4;
         position: absolute;
+        left: 50%;
+        top: 50%;
         opacity: 0%;
         text-align: center;
         user-select: none;
     }
+    .absoluteCenteredText {
+        margin-left: -100%;
+        margin-top: -10px;
+    }
     .opening .skill-name {
-        animation: open__spider-label 0.5s normal;
+        display: none;
     }
     .opened .skill-name {
         opacity: 100%;
@@ -281,14 +300,6 @@
     .polygon {
         position: absolute;
         z-index:3;
-        clip-path: polygon(
-            var(--polygon-left) 25%,
-            var(--polygon-left) 75%,
-            50% 100%,
-            var(--polygon-right) 75%,
-            var(--polygon-right) 25%,
-            50% 0%
-        );
         background-color: var(--basis-color);
     }
     .handle {
@@ -300,9 +311,6 @@
         background-color: rgb(127, 104, 255);
         filter: brightness( 95% );
         border-radius: 8px;
-    }
-    .closed .handle, .opening .handle {
-        display:none;
     }
     .handle:hover {
         opacity: 66%;
@@ -323,7 +331,9 @@
         opacity: 50%;
         background-color: pink;
     }
-    .closed .spider-web, .opening .spider-web {
+    .closed .spider-web, .opening .spider-web,
+    .closed .skill-name,
+    .closed .handle, .opening .handle {
         display: none;
     }
     .opened .spider-web {
