@@ -5,7 +5,7 @@
             <div v-for="(bin,index) of binsHeight" :key="index+'someBin'"
                 class="bin"
                 :style="binStyles[index]">
-                <!-- FIXME assign height by passing it as parameter -->
+                <!-- FIXME??? assign height by passing it as parameter -->
             </div>
         </div>
         <div class="slider">
@@ -18,8 +18,6 @@
 </template>
 
 <script>
-import { onUpdated } from 'vue';
-
     export default {
         name: 'double-range-slider',
         props: {
@@ -125,25 +123,33 @@ import { onUpdated } from 'vue';
                 let valueInPixels = handleNewCentralPosition - this.calculationTrackLeft;
                 let currentValue = (this.maxValue - this.minValue) * (valueInPixels/this.calculationTrackWidth);
                 currentValue =
-                    currentValue < this.minValue ? this.minValue
-                    : currentValue > this.maxValue ? this.maxValue
-                    : isLeftHandle && currentValue > this.highValue ? this.highValue
+                    isLeftHandle && currentValue > this.highValue ? this.highValue
                     : ! isLeftHandle && currentValue < this.lowValue ? this.lowValue
+                    : currentValue < this.minValue ? this.minValue
+                    : currentValue > this.maxValue ? this.maxValue
                     : currentValue;
                 if (isLeftHandle) {
-                    if (handleNewCentralPosition>=this.trackRect.x+this.barThickness/2 && handleNewCentralPosition<this.rightHandleCentralPosition) {
-                        this.leftHandleCentralPosition = handleNewCentralPosition;
+                    this.lowValue = currentValue;
+                    this.$emit("input", { ...{"lowValue":currentValue, "highValue":this.highValue}});
+                    if (handleNewCentralPosition<this.rightHandleCentralPosition) {
+                        if (handleNewCentralPosition>=this.trackRect.x+this.barThickness/2) {
+                            this.leftHandleCentralPosition = handleNewCentralPosition;
+                        } else {
+                            handleNewCentralPosition = this.trackRect.x+this.barThickness/2;
+                        }
                         this.$refs.leftHandle.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
                         this.$refs.range.style.left = handleNewCentralPosition + 'px';
-                        this.lowValue = currentValue;
-                        this.$emit("input", { ...{"lowValue":currentValue, "highValue":this.highValue}});
                     }
                 } else if ( ! isLeftHandle) {
-                    if (handleNewCentralPosition<=this.trackRect.x+this.trackRect.width-this.barThickness/2 && handleNewCentralPosition>this.leftHandleCentralPosition) {
-                        this.rightHandleCentralPosition = handleNewCentralPosition;
+                    this.highValue = currentValue;
+                    this.$emit("input", { ...{"lowValue":this.lowValue, "highValue":currentValue}});
+                    if (handleNewCentralPosition>this.leftHandleCentralPosition) {
+                        if (handleNewCentralPosition<=this.trackRect.x+this.trackRect.width-this.barThickness/2) {
+                            this.rightHandleCentralPosition = handleNewCentralPosition;
+                        } else {
+                            handleNewCentralPosition = this.trackRect.x+this.trackRect.width+this.barThickness/2;
+                        }
                         this.$refs.rightHandle.style.left = handleNewCentralPosition - this.handleRadius.toString() + 'px';
-                        this.highValue = currentValue;
-                        this.$emit("input", { ...{"lowValue":this.lowValue, "highValue":currentValue}});
                     }
                 }
                 if ( this.isClicked ) {
@@ -151,7 +157,10 @@ import { onUpdated } from 'vue';
                     this.$refs.leftHandle.classList.add('hover-style');
                     this.$refs.rightHandle.classList.add('hover-style');
                 }
-                this.$refs.range.style.width = this.rightHandleCentralPosition - this.leftHandleCentralPosition + 'px';
+                this.$refs.range.style.width = 
+                    eval(this.$refs.rightHandle.style.left.substring(0, this.$refs.rightHandle.style.left.length-2))
+                    - eval(this.$refs.leftHandle.style.left.substring(0, this.$refs.leftHandle.style.left.length-2))
+                    + 'px';
             }
         },
         beforeCreate() {

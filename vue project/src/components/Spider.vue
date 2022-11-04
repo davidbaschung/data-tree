@@ -1,6 +1,8 @@
 <!-- TODO details possibly
-    adjust sliderRange extremas
+    more refs
     dégradé couleur levels : 0 -> rouge, 5 -> vert
+    reset button
+    link projects
 -->
 
 <template>

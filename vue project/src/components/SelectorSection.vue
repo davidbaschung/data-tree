@@ -174,6 +174,7 @@
         width:100%;
         display: flex;
         background-color:darken(greenyellow, 20%);
+        user-select: none;
 
         & * {
             vertical-align: middle;
