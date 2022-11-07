@@ -7,17 +7,23 @@
 
 <template>
     <div class="skills-spider" :class="transitionStates">
-        <div class="overlay"></div>
+        <div class="overlay" ref="overlay"></div>
         <div style="position:relative">
             <div class="spider-selector" ref="spiderSelector" @click="openWidget">
                 <div class="polygon" v-for="i in 6" :key="i" :level="6-i" :ref="`level${6-i}`" :style="getPolygonStyle(6-i)" @dragover.prevent @drop="dropPolygon($event)"></div> <!-- must remain placed first, for relative position in CSS-->
+                <div class="reset-button-outline" ref="resetButton" :style="getPolygonStyle(-1.25)"></div>
+                <div class="reset-button" ref="resetButton" :style="getPolygonStyle(-1.4)" @click="resetHandles">
+                    <div class="centered-text">
+                        Reset
+                    </div>
+                </div>
                 <span class="skill-name" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">
-                    <div class="absoluteCenteredText">
+                    <div class="absolute-centered-text">
                         {{skill.label}}
                     </div>
                 </span>
                 <div class="handle" draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
-                <div class="spider-web" ></div>
+                <div class="spider-web" ref="spiderWeb"></div>
             </div>
         </div>
     </div>
@@ -132,7 +138,7 @@
                 this.$emit("input", this.skills);
                 const targetPolygon = document.getElementsByClassName("polygon")[5-skillLevel];
                 const polygonRect = targetPolygon.getBoundingClientRect();
-                const spiderRect = document.getElementsByClassName("spider-selector")[0].getBoundingClientRect();
+                const spiderRect = this.$refs.spiderSelector.getBoundingClientRect();
                 const center = {x:spiderRect.width/2, y:spiderRect.height/2};
                 const distance = polygonRect.height/2 - 10
                 const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / this.skills.length * skillAxisIndex;
@@ -146,9 +152,8 @@
                 element.style.left = x - 8 + 'px';
                 element.style.top = y - 8 + 'px';
                 this.$nextTick( () => {
-                    let spiderWeb = document.getElementsByClassName("spider-web")[0];
-                    let spiderSelector = document.getElementsByClassName("spider-selector")[0];
-                    let spiderSelectorRect = spiderSelector.getBoundingClientRect();
+                    let spiderWeb = this.$refs.spiderWeb;
+                    let spiderSelectorRect = this.$refs.spiderSelector.getBoundingClientRect();
                     let clipPath = "polygon(";
                     const handles = document.getElementsByClassName("handle");
                     for (let h of handles) {
@@ -162,9 +167,16 @@
             dragStartHandle(event) {
                 event.dataTransfer.setData('skillAxisIndex', event.target.getAttribute("skillAxisIndex"));
             },
+            resetHandles() {
+                Array.prototype.forEach.call(
+                    document.getElementsByClassName("handle"),
+                    (handle, index) => {
+                        this.setHandlePositionByPlace(handle, 0, index)
+                    }
+                );
+            },
             openWidget() {
-                let spider = document.getElementsByClassName("spider-selector")[0];
-                if (spider.classList.contains("opened")) return;
+                if (this.isOpened) return;
                 let root = document.documentElement;
                 root.style.setProperty("--current-polygon-padding", '20px');
                 root.style.setProperty("--current-spider-padding", '110px');
@@ -176,7 +188,7 @@
                         this.isOpen = true;
                         this.setHandlePositionByPlace(element, this.skills[index].level, index);
                         element.skillAxisIndex = parseInt(index);
-                        spider.focus();
+                        this.$refs.spiderSelector.focus();
                     });
                     this.setNamesPositions();
                     document.querySelectorAll(".skill-name, .handle").forEach( (element, index) => {
@@ -188,13 +200,11 @@
                 }, 500);
             },
             closeWidget() {
-                let spider = document.getElementsByClassName("spider-selector")[0];
-                let overlay = document.getElementsByClassName("overlay")[0];
                 this.isTransitioning = true;
                 this.isOpen = true;
                 setTimeout( () => { /* hides spider for 30ms to solve the glitch flashing the opened spider */
-                    overlay.setAttribute("style","display:none");
-                    spider.setAttribute("style","display:none");
+                    this.$refs.overlay.setAttribute("style","display:none");
+                    this.$refs.spiderSelector.setAttribute("style","display:none");
                 }, 485);
                 setTimeout(() => {
                         this.isTransitioning = false;
@@ -204,8 +214,8 @@
                         root.style.setProperty("--current-spider-padding", '2.5px');
                 }, 500);
                 setTimeout( () => {
-                    overlay.removeAttribute("style");
-                    spider.removeAttribute("style");
+                    this.$refs.overlay.removeAttribute("style");
+                    this.$refs.spiderSelector.removeAttribute("style");
                 }, 515);
             }
         },
@@ -214,10 +224,9 @@
                 this.namesPositions[i] = ["0px", "0px"];
         },
         mounted() {
-            let spider = document.getElementsByClassName("spider-selector")[0];
             let root = document.documentElement;
             window.addEventListener("click", (event) => {
-                if ( ! (spider.contains(event.target)) && this.isOpened)
+                if ( ! (this.$refs.spiderSelector.contains(event.target)) && this.isOpened)
                     this.closeWidget();
             });
             window.addEventListener("keydown", (event) => {
@@ -234,6 +243,8 @@
         --handle-radius: 8px;
         --current-polygon-padding: 2.5px;
         --current-spider-padding: 2.5px;
+        --reset-color-1: rgb(233, 116, 101);
+        --reset-color-2: rgb(255, 141, 126);
     }
     @keyframes open__spider {
         from {
@@ -273,6 +284,35 @@
     .closing .spider-selector {
         animation: open__spider 0.5s reverse;
     }
+    .reset-button-outline, .reset-button  {
+        position: absolute;
+        z-index: 6;
+    }
+    .reset-button-outline {
+        background-color: var(--reset-color-1) !important;
+    }
+    .opened .reset-button, .closing .reset-button  {
+        z-index: 6;
+        background-color: var(--reset-color-1) !important;
+    }
+    .closed .reset-button, .opening .reset-button,
+    .closed .reset-button-outline, .opening.reset-button-outline {
+        display: none;
+    }
+    .reset-button:hover {
+        background-color: var(--reset-color-2) !important;
+    }
+    .centered-text {
+        text-align: center;
+        transform: translate(0, 120%);
+        color: rgb(255, 233, 220);
+        text-shadow: -2px -2px 0 var(--reset-color-1), 2px -2px 0 var(--reset-color-1), -2px 2px 0 var(--reset-color-1), 2px 2px 0 var(--reset-color-1);
+        font-weight: bold;
+        font-family: Sans-Serif;
+    }
+    .reset-button-outline .centered-text{
+        text-shadow: -2px -2px 0 var(--reset-color-1), 2px -2px 0 var(--reset-color-1), -2px 2px 0 var(--reset-color-1), 2px 2px 0 var(--reset-color-1);
+    }
     @keyframes open__spider-label {
         0% { opacity: 0%; }
         100% { opacity: 100%; }
@@ -286,7 +326,7 @@
         text-align: center;
         user-select: none;
     }
-    .absoluteCenteredText {
+    .absolute-centered-text {
         margin-left: -100%;
         margin-top: -10px;
     }
@@ -316,7 +356,7 @@
     }
     .handle:hover {
         opacity: 66%;
-        background-color: turquoise !important;
+        background-color: lightcoral !important;
         cursor: grab;
     }
     .handle:active {
