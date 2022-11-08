@@ -109,7 +109,6 @@
 				setTimeout( () => {
 					this.$store.dispatch("ADD_SKILLS_TO_PERSONS", {skillNames:this.skills.map(skill =>skill.key), skillMaxLevel:5});
 					this.$store.dispatch("ADD_AVAILABILITY_TO_PERSONS");
-					this.$store.dispatch("ADD_SELECTIVITY_TO_PERSONS");
 				}, 1000);
             },
 			updateIsLoading(isLoading) {

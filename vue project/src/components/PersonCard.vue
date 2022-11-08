@@ -42,13 +42,11 @@
             value: {
                 handler(person) {
                     this.person = person;
-                    console.log("handler")
                 },
                 immediate: true
             }
         },
         updated() {
-            console.log(this.person);
             this.$refs.checkbox.checked = this.person.isSelected;
         }
     }

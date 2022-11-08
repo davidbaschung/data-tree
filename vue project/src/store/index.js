@@ -48,6 +48,10 @@ let store = new Vuex.Store({
     UPDATE_PERSONS(state, persons) {
       state.persons = persons;
     },
+    UPDATE_PERSON(state, person) {
+      let statePerson = state.persons.find(p => p.login.uuid == person.login.uuid);
+      statePerson = person;
+    },
     RESET_PERSONS(state) {
       state.persons = [];
     },
@@ -99,7 +103,7 @@ let store = new Vuex.Store({
     },
     ADD_SELECTIVITY_TO_PERSONS({commit, state}) {
       state.persons.forEach( (person, index) => {
-        person.isSelected = (index==0); //TODO false
+        person.isSelected = false;
       })
     }
   }
