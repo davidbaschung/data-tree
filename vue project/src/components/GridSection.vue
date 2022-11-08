@@ -17,9 +17,9 @@
             </div>
             <!-- TransitionGroup is used for lists only -->
             <!-- <TransitionGroup name="grid" tag="div"> -->
-                <div v-show=" ! isLoading" v-for="(p, index) in persons" :key="index">
-                    <person-card :person="p"></person-card>
-                </div>
+            <div v-show=" ! isLoading" v-for="index in selectablePersons.length" :key="index">
+                <person-card v-model="selectablePersons[index-1]" @input="log"></person-card>
+            </div>
             <!-- </TransitionGroup> -->
         </div>
     </div>
@@ -52,6 +52,7 @@
         },
         data() {
             return {
+                selectablePersons: Array,
                 isLoading: true,
                 loadStart: Date,
                 disabled: {
@@ -72,7 +73,11 @@
         },
         watch: {
             '$store.state.persons' (x) {
-                this.isLoading = x[0] == undefined;
+                if (x[0] == undefined || ! this.isLoading) return;
+                this.selectablePersons = x;
+                this.$store.dispatch("ADD_SELECTIVITY_TO_PERSONS");
+                console.log("x : ", x);
+                this.isLoading = false;
                 this.$emit("isLoading", this.isLoading);
             },
         },
@@ -89,6 +94,9 @@
                     ...this.disabled
                 }
             },
+            log(x) { // TODO remove
+                console.log(x);
+            }
         },
     }
 </script>
@@ -114,7 +122,7 @@
         // you wanted to know how to center vertically. Put the text in a block element and use flex on the parent. see scss below
         
         .background {
-            position:absolute;
+            position: absolute;
             z-index: 0;
             width: 100%;
             height: 100%;

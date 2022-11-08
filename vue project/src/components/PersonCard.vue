@@ -1,9 +1,12 @@
 <template>
     <!-- <div> -->
-        <div class="person-card">
-            <img :src="person.picture.medium" alt="portrait" />
-            <p>{{ person.name.first + " " + person.name.last }}</p>
-        </div>
+        <span v-if="this.person">
+            <div class="person-card" @click="selectCheckBox($event)">
+                <img :src="person.picture.medium" alt="portrait" />
+                <input type="checkbox" ref="checkbox" :value="person.isSelected" />
+                <p>{{ this.person.name.first + " " + this.person.name.last }}</p>
+            </div>
+        </span>
 
         <!-- Vue 3 only -->
         <!-- <Teleport to="div.selected-persons" :disabled=" ! isSelected">
@@ -20,13 +23,33 @@
     export default {
         name: 'PersonCard',
         props: [
-            'person'
+            'value',
         ],
         data() {
             return {
-                isSelected: true
-                //TODO false
+                person: Object
             }
+        },
+        emits: [ 'input' ],
+        methods: {
+            selectCheckBox(event) {
+                this.$refs.checkbox.checked = ! this.$refs.checkbox.checked;
+                this.person.isSelected = this.$refs.checkbox.checked;
+                this.$emit("input", this.person);
+            }
+        },
+        watch: {
+            value: {
+                handler(person) {
+                    this.person = person;
+                    console.log("handler")
+                },
+                immediate: true
+            }
+        },
+        updated() {
+            console.log(this.person);
+            this.$refs.checkbox.checked = this.person.isSelected;
         }
     }
 </script>
@@ -40,5 +63,15 @@
         border: 5px solid green;
         width: 7em;
         height: 7em;
+    }
+
+    div.person-card:hover {
+        cursor: pointer;
+    }
+
+    input[type='checkbox'] {
+        top: 0px;
+        float:right;
+        pointer-events: none;
     }
 </style>

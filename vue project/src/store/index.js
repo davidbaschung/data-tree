@@ -96,6 +96,11 @@ let store = new Vuex.Store({
       state.persons.forEach( (person) => {
         person.availability = Math.floor(Math.random()*2);
       });
+    },
+    ADD_SELECTIVITY_TO_PERSONS({commit, state}) {
+      state.persons.forEach( (person, index) => {
+        person.isSelected = (index==0); //TODO false
+      })
     }
   }
 });

@@ -33,7 +33,7 @@
 		},
 		data() {
 			return {
-				isLoading: false,
+				isLoading: true,
 				personsFilterBy: {}, // for SelectorSection event reception
 				refreshKey: 0,
 				skills: [
@@ -45,13 +45,13 @@
                     {key:"alias", label:"Alias", level:0},
 					{key:"sketchup", label:"Sketchup", level:0},
 					{key:"archicad", label:"ArchiCAD", level:0},
-					{key:"3dsmax", label:"3dsMax", level:0},
-					{key:"lightroom", label:"Lightroom", level:0},
-                    {key:"autocad", label:"AutoCAD", level:0},
-					{key:"revit", label:"Revit", level:0},
-					{key:"elitecad", label:"EliteCAD", level:0},
-					{key:"blender", label:"Blender", level:0},
-					{key:"premierepro", label:"Premiere PRO", level:0}
+					// {key:"3dsmax", label:"3dsMax", level:0},
+					// {key:"lightroom", label:"Lightroom", level:0},
+                    // {key:"autocad", label:"AutoCAD", level:0},
+					// {key:"revit", label:"Revit", level:0},
+					// {key:"elitecad", label:"EliteCAD", level:0},
+					// {key:"blender", label:"Blender", level:0},
+					// {key:"premierepro", label:"Premiere PRO", level:0}
                 ]
 			}
 		},
@@ -105,11 +105,11 @@
                 this.loadPersons();
             },
             loadPersons() {
-                this.isLoading = true;
                 this.$store.dispatch("LOAD_PERSONS", 10);
 				setTimeout( () => {
 					this.$store.dispatch("ADD_SKILLS_TO_PERSONS", {skillNames:this.skills.map(skill =>skill.key), skillMaxLevel:5});
 					this.$store.dispatch("ADD_AVAILABILITY_TO_PERSONS");
+					this.$store.dispatch("ADD_SELECTIVITY_TO_PERSONS");
 				}, 1000);
             },
 			updateIsLoading(isLoading) {

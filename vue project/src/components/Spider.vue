@@ -1,14 +1,8 @@
-<!-- TODO details possibly
-    more refs
-    dégradé couleur levels : 0 -> rouge, 5 -> vert
-    reset button
-    link projects
--->
-
 <template>
     <div class="skills-spider" :class="transitionStates">
         <div class="overlay" ref="overlay"></div>
-        <div style="position:relative">
+        <div style="position:relative"> 
+            <!-- todo put in <style> -->
             <div class="spider-selector" ref="spiderSelector" @click="openWidget">
                 <div class="polygon" v-for="i in 6" :key="i" :level="6-i" :ref="`level${6-i}`" :style="getPolygonStyle(6-i)" @dragover.prevent @drop="dropPolygon($event)"></div> <!-- must remain placed first, for relative position in CSS-->
                 <div class="reset-button-outline" ref="resetButton" :style="getPolygonStyle(-1.25)"></div>
