@@ -72,6 +72,8 @@
         },
         watch: {
             '$store.state.persons' (x) {
+                // NOTE : this watcher activates when setting the value, not on property modification inside the value.
+                // TODO check :: for ulterior changes, we use an observer : "store.subscribe"
                 if (x[0] == undefined) return;
                 this.$store.dispatch("ADD_SELECTIVITY_TO_PERSONS");
                 this.isLoading = false;

@@ -45,14 +45,14 @@ let store = new Vuex.Store({
      */
     // self-note : this means tracking (with logs) can be done for all to the accesses to the store at once.
   mutations: {
-    UPDATE_PERSONS(state, persons) {
+    UPDATE_ALL_PERSONS(state, persons) {
       state.persons = persons;
     },
     UPDATE_PERSON(state, person) {
       let statePerson = state.persons.find(p => p.login.uuid == person.login.uuid);
       statePerson = person;
     },
-    RESET_PERSONS(state) {
+    RESET_ALL_PERSONS(state) {
       state.persons = [];
     },
     UPDATE_COUNTRIES_SET_FILTER(state, countries) {
@@ -78,7 +78,7 @@ let store = new Vuex.Store({
     LOAD_PERSONS({commit, state}, amount=100) {
 			Utils.default.fetchPersons(amount)
       .then((persons) => {
-        store.commit("UPDATE_PERSONS", persons);
+        store.commit("UPDATE_ALL_PERSONS", persons);
         return persons;
       })
       .then((persons) => {

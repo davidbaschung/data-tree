@@ -3,8 +3,9 @@
 		<div class="team-selector" >
 			<button @click="onReload">reload</button>
 			<span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
-			<selector-section name="selector" @personsFiltering="setPersonsFilterBy" :skillSet="this.skills"></selector-section>
+			<filtering-section name="selector" @personsFiltering="setPersonsFilterBy" :skillSet="this.skills"></filtering-section>
 			<grid-section name="results" :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
+			<selected-section :persons="selectedPersons"></selected-section>
 			<!-- <selected-persons></selected-persons> -->
 		</div>
 	</KeepAlive>
@@ -20,16 +21,16 @@
     * In no child component there is the need to access the store or have logic that goes beyond ensuring the components contract
     */
 	import { mapGetters } from 'vuex'
-	import SelectorSection from './SelectorSection.vue'
+	import FilteringSection from './FilteringSection.vue'
 	import GridSection from './GridSection.vue';
-	// import SelectedPersons from './SelectedPersons.vue';
+	import SelectedSection from './SelectedSection.vue';
 
 	export default {
 		name: 'TeamSelector',
 		components: {
-			'selector-section': SelectorSection,
+			'filtering-section': FilteringSection,
 			'grid-section': GridSection,
-			// 'selected-persons': SelectedPersons
+			'selected-section': SelectedSection,
 		},
 		data() {
 			return {
@@ -59,13 +60,22 @@
 			...mapGetters(["persons"]),
 			filteredPersons() {
 				this.refreshKey;
-				let p = this.persons;
+				let persons = this.persons; // from mapGetters, same as this.$store.state.persons;
 				return (
-					(p != undefined )
-					? p.filter(this.filters)
+					(persons != undefined )
+					? persons.filter(this.filters)
 					: []
 				);
 			},
+			selectedPersons() {
+				this.refreshKey;
+				return (
+					this.filteredPersons.filter( p => p.isSelected )
+				)
+			}
+		},
+		watch: {
+			
 		},
 		methods: {
 			setPersonsFilterBy(personsFilterBy) {
@@ -101,7 +111,7 @@
 				return false;
 			},
             onReload() {
-				this.$store.commit("RESET_PERSONS");
+				this.$store.commit("RESET_ALL_PERSONS");
                 this.loadPersons();
             },
             loadPersons() {
@@ -119,7 +129,15 @@
 		},
 		created() {
             this.loadPersons();
-		}
+
+			this.unsubscribe = this.$store.subscribe((mutation, state) => {
+				if (mutation.type == 'UPDATE_PERSON')
+					this.refreshKey++;
+			});
+		},
+		beforeDestroy() {
+			this.unsubscribe();
+		},
 	}
 </script>
 
