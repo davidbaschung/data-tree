@@ -11,16 +11,15 @@
                 persons test : {{ printPersons }}
             </div>
             <div v-show="isLoading" v-for="i in 3" :key="i+'someSalt'" class="flex">
-                <div class="person-card" :style="disabledStyles(i)">
+                <div class="person-card loader" :style="disabledStyles(i)">
                     Loading...
                 </div>
             </div>
-            <!-- TransitionGroup is used for lists only -->
-            <!-- <TransitionGroup name="grid" tag="div"> -->
             <div v-show=" ! isLoading" v-for="(p, index) in persons" :key="index">
                 <person-card :value="p" @input="updatePerson"></person-card>
             </div>
-            <!-- </TransitionGroup> -->
+            <div aria-hidden="true" class="person-card filler" v-for="i in this.numberOfFillerCards" :key="i+'personSalt'">
+            </div>
         </div>
     </div>
 </template>
@@ -49,11 +48,16 @@
             ...mapGetters([
                 "printPersons"
             ]),
+            test() {
+                return this.testData;
+            }
         },
         data() {
             return {
                 isLoading: true,
                 loadStart: Date,
+                numberOfFillerCards: 0,
+                isNumberOfFillersComputed: false,
                 disabled: {
                     'background-color': 'darkgray',
                     'border' : '5px solid gray',
@@ -67,7 +71,8 @@
                     'height' : '7em',
                     'font-weight' : 'bold',
                     'color' : 'white',
-                }
+                },
+                lastResizeTime : Number,
             }
         },
         watch: {
@@ -95,12 +100,41 @@
             },
             updatePerson(person) {
                 this.$store.commit("UPDATE_PERSON", person);
+            },
+            deleteLoaderCards() {
+                Array.from(document.getElementsByClassName("loader")).forEach( (card) => card.remove());
+            },
+            computeNumberOfFillerCards() {
+                let personCards = document.querySelectorAll(".person-card:not(.filler)");
+                if (this.isLoading || personCards.length < 3 || this.isNumberOfFillersComputed) return;
+                let numberOfColumns;
+                for (let i=2; i<personCards.length; i++) {
+                    if (personCards[i].getBoundingClientRect().top == personCards[0].getBoundingClientRect().top)
+                        continue;
+                    numberOfColumns = i;
+                    break;
+                }
+                let excessiveCards = personCards.length % numberOfColumns;
+                this.numberOfFillerCards = ( numberOfColumns - excessiveCards ) % numberOfColumns;
+                this.isNumberOfFillersComputed = true;
             }
         },
+        created() {
+            window.addEventListener("resize", () => {
+                    console.log("interval");
+                    this.isNumberOfFillersComputed = false;
+                    this.computeNumberOfFillerCards()
+            });
+        },
+        updated() {
+            this.deleteLoaderCards();
+            this.computeNumberOfFillerCards();
+        }
     }
 </script>
 
 <style lang="scss">
+    @import "../styles/person-card-dimensions.css";
 
     :root {
         background-color: rgb(235, 215, 176);
@@ -111,12 +145,15 @@
         // font-size: 10pt;
 
         .flex {
-            display: flex
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            align-content: left;
         }
         .grid-section {
             position:relative;
             z-index: 1;
-            flex-wrap: wrap;
         }
         // you wanted to know how to center vertically. Put the text in a block element and use flex on the parent. see scss below
         
@@ -127,7 +164,6 @@
             height: 100%;
             background-image: url("https://img.freepik.com/premium-vector/light-orange-watercolor-abstract-decorative-background_98551-694.jpg?w=2000");
         }
-    
     }
 
     img {

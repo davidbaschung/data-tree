@@ -4,7 +4,11 @@
             <div class="person-card" @click="selectCheckBox($event)">
                 <img :src="person.picture.medium" alt="portrait" />
                 <input type="checkbox" ref="checkbox" :value="person.isSelected" />
-                <p>{{ this.person.name.first + " " + this.person.name.last }}</p>
+                <p>
+                    {{ this.person.name.first}}
+                    <br>
+                    {{ this.person.name.last }}
+                </p>
             </div>
         </span>
 
@@ -46,30 +50,40 @@
                 immediate: true
             }
         },
+        created() {
+            // document.documentElement.style.setProperty("--numberOfColumns", );
+        },
         updated() {
             this.$refs.checkbox.checked = this.person.isSelected;
         }
     }
 </script>
 
-<style>
+<style scoped>
+    @import "../styles/person-card-dimensions.css";
+
     div.person-card {
-        border-radius:13px;
         background-color: yellowgreen;
-        margin: 0.5em;
-        padding: 0.5em;
         border: 5px solid green;
-        width: 7em;
-        height: 7em;
+        overflow: hidden;
     }
 
     div.person-card:hover {
         cursor: pointer;
     }
 
+    p {
+        position: relative;
+        top: 0px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        clear: none;
+    }
+
     input[type='checkbox'] {
         top: 0px;
         float:right;
+        clear: none;
         pointer-events: none;
     }
 </style>

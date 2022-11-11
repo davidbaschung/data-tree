@@ -23,7 +23,7 @@
     @import "../styles/_colors.scss";
         
     .selected-section {
-        height: 200px;
+        height: 100%;
         bottom: 0px;
         padding: 15px;
         background-color: $greenyellow;
