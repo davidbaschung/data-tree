@@ -1,7 +1,7 @@
 <template>
     <div class="grid-section">
         <div class="background" v-once></div>
-        <div class="flex grid-section">
+        <div class="flex grid-section" ref="gridSection">
             <div v-if="false" v-memo="[someNumber]">
                 <div>some store number : {{ $store.state.someNumber }}</div>
                 <div>some mapState number : {{ someNumber }}</div> <!--(using mapState)-->
@@ -10,7 +10,7 @@
                 <br>
                 persons test : {{ printPersons }}
             </div>
-            <div v-show="isLoading" v-for="i in 3" :key="i+'someSalt'" class="flex">
+            <div v-show="isLoading" v-for="i in 3" :key="i+'someSalt'">
                 <div class="person-card loader" :style="disabledStyles(i)">
                     Loading...
                 </div>
@@ -31,7 +31,7 @@
  * It does not need to know about the store and does not need to change the state.
  * It simply takes an array of Persons and displays them
  */
-    import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
     import PersonCard from "./PersonCard.vue"
     export default {
         name: 'grid-section',
@@ -46,7 +46,7 @@
                 "someNumber",
             ]),
             ...mapGetters([
-                "printPersons"
+                // "printPersons"
             ]),
             test() {
                 return this.testData;
@@ -72,17 +72,17 @@
                     'font-weight' : 'bold',
                     'color' : 'white',
                 },
-                lastResizeTime : Number,
             }
         },
         watch: {
-            '$store.state.persons' (x) {
+            '$store.state.persons' (newPersons) {
                 // NOTE : this watcher activates when setting the value, not on property modification inside the value.
                 // TODO check :: for ulterior changes, we use an observer : "store.subscribe"
-                if (x[0] == undefined) return;
+                if (newPersons[0] == undefined) return;
                 this.$store.dispatch("ADD_SELECTIVITY_TO_PERSONS");
                 this.isLoading = false;
                 this.$emit("isLoading", this.isLoading);
+
             },
         },
         methods: {
@@ -107,7 +107,7 @@
             computeNumberOfFillerCards() {
                 let personCards = document.querySelectorAll(".person-card:not(.filler)");
                 if (this.isLoading || personCards.length < 3 || this.isNumberOfFillersComputed) return;
-                let numberOfColumns;
+                let numberOfColumns = 1;
                 for (let i=2; i<personCards.length; i++) {
                     if (personCards[i].getBoundingClientRect().top == personCards[0].getBoundingClientRect().top)
                         continue;
@@ -119,16 +119,24 @@
                 this.isNumberOfFillersComputed = true;
             }
         },
-        created() {
+        mounted() {
             window.addEventListener("resize", () => {
-                    console.log("interval");
-                    this.isNumberOfFillersComputed = false;
-                    this.computeNumberOfFillerCards()
+                let personCards = document.querySelectorAll(".person-card:not(.filler)");
+                if (personCards.length == 0) return;
+                this.isNumberOfFillersComputed = false;
+                this.computeNumberOfFillerCards()
             });
         },
         updated() {
             this.deleteLoaderCards();
-            this.computeNumberOfFillerCards();
+            let personCards = document.querySelectorAll(".person-card:not(.filler)");
+            if (personCards.length == 0) return;
+            if (personCards[personCards.length-1].getBoundingClientRect().top == personCards[0].getBoundingClientRect().top ) {
+                this.$refs.gridSection.classList.remove("space-evenly");
+            } else {
+                this.$refs.gridSection.classList.add("space-evenly");
+                this.computeNumberOfFillerCards();
+            }
         }
     }
 </script>
@@ -148,8 +156,10 @@
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            justify-content: space-evenly;
             align-content: left;
+        }
+        .space-evenly {
+            justify-content: space-evenly;
         }
         .grid-section {
             position:relative;
