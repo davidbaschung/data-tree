@@ -84,6 +84,12 @@ import { mapState, mapGetters } from 'vuex'
                 this.$emit("isLoading", this.isLoading);
 
             },
+            persons() {
+                let personCards = document.querySelectorAll(".person-card:not(.filler)");
+                if (personCards.length == 0) return;
+                this.isNumberOfFillersComputed = false;
+                this.computeNumberOfFillerCards()
+            }
         },
         methods: {
             disabledStyles(index) {
@@ -124,7 +130,7 @@ import { mapState, mapGetters } from 'vuex'
                 let personCards = document.querySelectorAll(".person-card:not(.filler)");
                 if (personCards.length == 0) return;
                 this.isNumberOfFillersComputed = false;
-                this.computeNumberOfFillerCards()
+                this.computeNumberOfFillerCards();
             });
         },
         updated() {
