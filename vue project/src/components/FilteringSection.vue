@@ -1,5 +1,5 @@
 <template>
-    <div class="selector-section">
+    <div class="filtering-section">
         <input
             type="text"
             class="nameInput"
@@ -45,7 +45,7 @@
             minLabel="0" maxLabel="100"
             :dataArray="personsAgeList" :interval="10"
         ></double-range-slider>
-        <skills-spider v-model="filterBy.skills"></skills-spider>
+        <skills-spider v-model="filterBy.skills" :maxLevel="10"></skills-spider>
         <div class="flex-grid">
             <div class="flex-column">
                 <div class="flex-row">
@@ -67,7 +67,7 @@
     import {mapState} from 'vuex'
 
     export default {
-    name: "selector-section",
+    name: "filtering-section",
     props: ["skillSet"],
     components: {
         DoubleRangeSlider,
@@ -170,7 +170,7 @@
         // bad practice
     }
 
-    .selector-section {
+    .filtering-section {
         width:100%;
         display: flex;
         background-color:darken(greenyellow, 20%);

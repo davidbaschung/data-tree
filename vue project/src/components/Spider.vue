@@ -4,7 +4,9 @@
         <div style="position:relative"> 
             <!-- todo put in <style> -->
             <div class="spider-selector" ref="spiderSelector" @click="openWidget">
-                <div class="polygon" v-for="i in 6" :key="i" :level="6-i" :ref="`level${6-i}`" :style="getPolygonStyle(6-i)" @dragover.prevent @drop="dropPolygon($event)"></div> <!-- must remain placed first, for relative position in CSS-->
+                <div class="polygon" v-for="i in maxLevel+1" :key="i" :level="maxLevel+1-i" :ref="`level${maxLevel+1-i}`"
+                    :style="getPolygonStyle(maxLevel+1-i)" @dragover.prevent @drop="dropPolygon($event)">
+                </div> <!-- must remain placed first, for relative position in CSS-->
                 <div class="reset-button-outline" ref="resetButton" :style="getPolygonStyle(-1.25)"></div>
                 <div class="reset-button" ref="resetButton" :style="getPolygonStyle(-1.4)" @click="resetHandles">
                     <div class="centered-text">
@@ -52,6 +54,10 @@
                     closing:this.isClosing
                 }
             },
+            closedPolygonPadding() { return 15 / this.maxLevel },
+            closedSpiderPadding()  { return 2.5 }, // TODO put again in updatePolygonPadding
+            openedPolygonPadding() { return 20},
+            openedSpiderPadding() { return 110 },
         },
         emits: [ 'input' ],
         props: {
@@ -71,7 +77,16 @@
                     {key: "skill3", label:"skill 3", level:0},
                     {key: "skill4", label:"skill 4", level:0},
                     {key: "skill5", label:"skill 5", level:0}
-                ]
+                ],
+            },
+            maxLevel: {
+                type: Number,
+                validator: (max) => max <= 10,
+                    // this.value.every( val => // impossible to compare to this.value, props validator are run iteratively in a for-loop
+                //         val.level <= max
+                    // ),
+                required: false,
+                default: 5,
             }
         },
         watch: {
@@ -84,16 +99,29 @@
             }
         },
         methods: {
+            setSpiderWidth() {
+                let width = 2 * ( (this.maxLevel + 1) * this.openedPolygonPadding ) + 2 * this.openedSpiderPadding;
+                document.documentElement.style.setProperty("--spider-width", width + 'px');
+            },
             getPolygonStyle(level) {
                 let properties = {
-                    width: `calc(100% - 2 * var(--current-polygon-padding) * ${ 5 - level } - 2 * var(--current-spider-padding) )`,
-                    height: `calc(100% - 2 * var(--current-polygon-padding) * ${ 5 - level } - 2 * var(--current-spider-padding) )`,
-                    top: `calc( var(--current-polygon-padding) * ${ 5 - level } + var(--current-spider-padding) )`,
-                    left: `calc( var(--current-polygon-padding) * ${ 5 - level } + var(--current-spider-padding) )`,
+                    width: `calc(100% - 2 * var(--current-polygon-padding) * ${ this.maxLevel - level } - 2 * var(--current-spider-padding) )`,
+                    height: `calc(100% - 2 * var(--current-polygon-padding) * ${ this.maxLevel - level } - 2 * var(--current-spider-padding) )`,
+                    top: `calc( var(--current-polygon-padding) * ${ this.maxLevel - level } + var(--current-spider-padding) )`,
+                    left: `calc( var(--current-polygon-padding) * ${ this.maxLevel - level } + var(--current-spider-padding) )`,
                     'background-color': level == 0 ? "#b3ffb3" : level % 2 == 0 ?  this.secondaryColor : this.primaryColor,
                     'clip-path': this.polygonClipPath,
                 }
                 return Object.entries(properties).map( ([key, value]) => key+":"+value ).join(";");
+            },
+            updatePolygonStyle() {
+                let root = document.documentElement;
+                let polygonPadding = this.isOpened || this.isOpening ? this.openedPolygonPadding+'px' : this.closedPolygonPadding+'px';
+                let spiderPadding = this.isOpened || this.isOpening ? this.openedSpiderPadding+'px' : this.closedSpiderPadding+'px';
+                // let polygonPadding = this.isOpen ? '20px' : '2.5px';
+                // let spiderPadding = this.isOpen ? '110px' : '2.5px';;
+                root.style.setProperty("--current-polygon-padding", polygonPadding);
+                root.style.setProperty("--current-spider-padding", spiderPadding);
             },
             setPolygonClipPath() {
                 let polygonClipPath = "polygon(";
@@ -110,7 +138,7 @@
             },
             setNamesPositions() {
                 let positions = [];
-                const middleWidth = this.$refs.level5[0].getBoundingClientRect().width/2;
+                const middleWidth = this.$refs["level"+this.maxLevel][0].getBoundingClientRect().width/2;
                 const containerMiddleWidth = this.$refs.spiderSelector.getBoundingClientRect().width/2;
                 for (let i=0; i<this.skills.length; i++) {
                     const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / this.skills.length * i;
@@ -130,7 +158,7 @@
             setHandlePositionByPlace(handleElement, skillLevel, skillAxisIndex) {
                 this.skills[skillAxisIndex].level = skillLevel;
                 this.$emit("input", this.skills);
-                const targetPolygon = document.getElementsByClassName("polygon")[5-skillLevel];
+                const targetPolygon = document.getElementsByClassName("polygon")[this.maxLevel-skillLevel];
                 const polygonRect = targetPolygon.getBoundingClientRect();
                 const spiderRect = this.$refs.spiderSelector.getBoundingClientRect();
                 const center = {x:spiderRect.width/2, y:spiderRect.height/2};
@@ -172,14 +200,16 @@
             openWidget() {
                 if (this.isOpened) return;
                 let root = document.documentElement;
-                root.style.setProperty("--current-polygon-padding", '20px');
-                root.style.setProperty("--current-spider-padding", '110px');
                 this.isTransitioning = true;
                 this.isOpen = false;
+                this.updatePolygonStyle();
+                // root.style.setProperty("--current-polygon-padding", '20px');
+                // root.style.setProperty("--current-spider-padding", '110px');
                 setTimeout( () => {
                     document.querySelectorAll(".handle").forEach( (element, index) => {
                         this.isTransitioning = false;
                         this.isOpen = true;
+                        // this.updatePolygonStyle();
                         this.setHandlePositionByPlace(element, this.skills[index].level, index);
                         element.skillAxisIndex = parseInt(index);
                         this.$refs.spiderSelector.focus();
@@ -203,9 +233,7 @@
                 setTimeout(() => {
                         this.isTransitioning = false;
                         this.isOpen = false;
-                        let root = document.documentElement;                    
-                        root.style.setProperty("--current-polygon-padding", '2.5px');
-                        root.style.setProperty("--current-spider-padding", '2.5px');
+                        this.updatePolygonStyle();
                 }, 500);
                 setTimeout( () => {
                     this.$refs.overlay.removeAttribute("style");
@@ -216,6 +244,8 @@
         created() {
             for (let i=0; i<this.skills.length; i++)
                 this.namesPositions[i] = ["0px", "0px"];
+                this.setSpiderWidth();
+                this.updatePolygonStyle();
         },
         mounted() {
             let root = document.documentElement;
@@ -235,8 +265,8 @@
 <style>
     :root {
         --handle-radius: 8px;
-        --current-polygon-padding: 2.5px;
-        --current-spider-padding: 2.5px;
+        /* --current-polygon-padding: 2.5px;
+        --current-spider-padding: 2.5px; */
         --reset-color-1: rgb(233, 116, 101);
         --reset-color-2: rgb(255, 141, 126);
     }
@@ -263,12 +293,16 @@
     .opening .spider-selector {
         animation: open__spider 0.5s normal;
     }
-    .opening .spider-selector, .opened .spider-selector, .closing .spider-selector {
+    .opening .spider-selector,
+    .opened .spider-selector,
+    .closing .spider-selector {
         z-index:3;
         position: absolute;
         left: -250px;
-        width: 460px;
-        height: 460px;
+        /* width: 460px;
+        height: 460px; */
+        width: var(--spider-width);
+        height: var(--spider-width);
         padding: 40px;
         background-color: dodgerblue !important;
         outline: 10px solid royalblue;
@@ -278,19 +312,23 @@
     .closing .spider-selector {
         animation: open__spider 0.5s reverse;
     }
-    .reset-button-outline, .reset-button  {
+    .reset-button-outline,
+    .reset-button  {
         position: absolute;
         z-index: 6;
     }
     .reset-button-outline {
         background-color: var(--reset-color-1) !important;
     }
-    .opened .reset-button, .closing .reset-button  {
+    .opened .reset-button,
+    .closing .reset-button  {
         z-index: 6;
         background-color: var(--reset-color-1) !important;
     }
-    .closed .reset-button, .opening .reset-button,
-    .closed .reset-button-outline, .opening.reset-button-outline {
+    .closed .reset-button,
+    .opening .reset-button,
+    .closed .reset-button-outline,
+    .opening.reset-button-outline {
         display: none;
     }
     .reset-button:hover {
@@ -393,7 +431,8 @@
         display: none;
         opacity: 0%;
     }
-    .opened > .overlay, .opening > .overlay {
+    .opened > .overlay,
+    .opening > .overlay {
         display: block;
         opacity: 50%;
     }

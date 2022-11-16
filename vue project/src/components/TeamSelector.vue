@@ -35,7 +35,7 @@
 		data() {
 			return {
 				isLoading: true,
-				personsFilterBy: {}, // for SelectorSection event reception
+				personsFilterBy: {}, // for FilteringSection event reception
 				refreshKey: 0,
 				skills: [
                     {key:"photoshop", label:"Photoshop", level:0},
@@ -117,7 +117,7 @@
             loadPersons() {
                 this.$store.dispatch("LOAD_PERSONS", 10);
 				setTimeout( () => {
-					this.$store.dispatch("ADD_SKILLS_TO_PERSONS", {skillNames:this.skills.map(skill =>skill.key), skillMaxLevel:5});
+					this.$store.dispatch("ADD_SKILLS_TO_PERSONS", {skillNames:this.skills.map(skill =>skill.key), skillMaxLevel:10});
 					this.$store.dispatch("ADD_AVAILABILITY_TO_PERSONS");
 				}, 1000);
             },
