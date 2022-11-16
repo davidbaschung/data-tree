@@ -263,6 +263,7 @@
 </script>
 
 <style>
+/* TODO adjust exact position */
     :root {
         --handle-radius: 8px;
         /* --current-polygon-padding: 2.5px;
@@ -311,6 +312,9 @@
     }
     .closing .spider-selector {
         animation: open__spider 0.5s reverse;
+    }
+    .closed .spider-selector {
+        bottom: 0px;
     }
     .reset-button-outline,
     .reset-button  {

@@ -1,5 +1,5 @@
 <template>
-    <div class="filtering-section">
+    <div class="filtering-section" ref="filteringSection">
         <input
             type="text"
             class="nameInput"
@@ -39,6 +39,7 @@
                 </div>
             </div>
         </div>
+        <br>
         <double-range-slider
             v-model="rangeValues"
             :minValue="0" :maxValue="100"
@@ -160,6 +161,13 @@
     created() {
         this.updateFilters();
     },
+    mounted() {
+        let filters = this.$refs.filteringSection.children;
+        Array.from(filters).forEach( (filter) => {
+            if (filter.getBoundingClientRect().top > filters[0].getBoundingClientRect().top)
+                filter.classList.add("flex-line-breaker");
+        })
+    }
 }
 </script>
 
@@ -173,6 +181,9 @@
     .filtering-section {
         width:100%;
         display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: left;
         background-color:darken(greenyellow, 20%);
         user-select: none;
 
@@ -182,61 +193,66 @@
             margin-right: 1em;
         }
 
-    // better nest all elements within, so that the styles do not get applied globally
-    // here - as you scpecified scope above it is safe, but when we use external styles files, better nest them to get them properly scoped
-    // or add generic styles to stuff like input so that it is used accross
+        // &>* {
+        .flex-line-breaker {
+            margin-top: 15px;
+        }
 
-    /* NOTE : have root class for each component, it makes it safe if we move this code to another scss file for this component.
-    Thus we avoid conflicts (e.g. several times "input", that appears too in other component).
-    SCSS can become really messy, better be careful and precise and define classes everyhwere. */
-    input {
-        background-color: whitesmoke;
-        margin: 2px;
-        border-radius: 5px;
-        color: green;
-        pointer-events: all;
+        // better nest all elements within, so that the styles do not get applied globally
+        // here - as you scpecified scope above it is safe, but when we use external styles files, better nest them to get them properly scoped
+        // or add generic styles to stuff like input so that it is used accross
 
-        &.range {
-            height:15px;
+        /* NOTE : have root class for each component, it makes it safe if we move this code to another scss file for this component.
+        Thus we avoid conflicts (e.g. several times "input", that appears too in other component).
+        SCSS can become really messy, better be careful and precise and define classes everyhwere. */
+        input {
+            background-color: whitesmoke;
+            margin: 2px;
+            border-radius: 5px;
+            color: green;
+            pointer-events: all;
 
-            .max-input {
-                padding: 100px;
-                display: none;
-                direction: rtl;
+            &.range {
+                height:15px;
+
+                .max-input {
+                    padding: 100px;
+                    display: none;
+                    direction: rtl;
+                }
             }
         }
-    }
-    select {
-        background-color: #{$lightgreenyellow};
-        border-radius: 8px;
-        width: 100px;
-        outline: none;
-
-        &:focus, &:active, &::selection {
-            border: 2px solid white;
-        }
-
-        option {
+        select {
             background-color: #{$lightgreenyellow};
+            border-radius: 8px;
+            width: 100px;
+            outline: none;
+
+            &:focus, &:active, &::selection {
+                border: 2px solid white;
+            }
+
+            option {
+                background-color: #{$lightgreenyellow};
+            }
         }
-    }
-    label {
-        top: 50%;
-        padding: 0px;
-        margin: 0px;
-    }
-    .flex-grid {
-        align-items: left;
-        flex-flow: column wrap;
-        justify-content: flex-start;
-    }
-    .flex-row {
-        flex: 0 0 7em;
-        margin: 0px;
-    }
-    .flex-column {
-        display: flex;
-    }
+        label {
+            top: 50%;
+            padding: 0px;
+            margin: 0px;
+        }
+        .flex-grid {
+            align-items: left;
+            flex-flow: column wrap;
+            justify-content: flex-start;
+        }
+        .flex-row {
+            flex: 0 0 7em;
+            margin: 0px;
+        }
+        .flex-column {
+            display: flex;
+        }
     }
 </style>
 

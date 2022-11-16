@@ -188,13 +188,18 @@
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
     :root {
         // modular variables set at runtime :
         // --handle-radius
         // --main-width
         // --calculation-track-width
         width: 100%;
+    }
+    .double-range-slider.flex-line-breaker {
+        margin-left: 5px;
+        margin-right: 5px;
+        margin-bottom: 5px;
     }
     div {
         margin: 0px;
