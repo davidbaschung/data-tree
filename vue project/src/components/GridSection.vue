@@ -15,7 +15,7 @@
                     Loading...
                 </div>
             </div>
-            <div v-show=" ! isLoading" v-for="(p, index) in persons" :key="index">
+            <div v-show=" ! isLoading" v-for="(p, index) in filteredPersons" :key="index">
                 <person-card :value="p" @input="updatePerson"></person-card>
             </div>
             <div aria-hidden="true" class="person-card filler" v-for="i in this.numberOfFillerCards" :key="i+'personSalt'">
@@ -36,7 +36,7 @@ import { mapState, mapGetters } from 'vuex'
     export default {
         name: 'grid-section',
         props: [
-            'persons'
+            'filteredPersons'
         ],
         components: {
              'person-card': PersonCard
@@ -44,6 +44,7 @@ import { mapState, mapGetters } from 'vuex'
         computed: {
             ...mapState([
                 "someNumber",
+                // "persons",
             ]),
             ...mapGetters([
                 // "printPersons"
@@ -84,11 +85,17 @@ import { mapState, mapGetters } from 'vuex'
                 this.$emit("isLoading", this.isLoading);
 
             },
-            persons() {
-                let personCards = document.querySelectorAll(".person-card:not(.filler)");
-                if (personCards.length == 0) return;
-                this.isNumberOfFillersComputed = false;
-                this.computeNumberOfFillerCards()
+            filteredPersons: {
+                handler() {
+                    let personCards = document.querySelectorAll(".person-card:not(.filler)");
+                    if (personCards.length == 0) return;
+                    this.isNumberOfFillersComputed = false;
+                    this.$nextTick( () => {
+                        this.computeNumberOfFillerCards();
+                    })
+                }, 
+                deep: true,
+                immediate: true
             }
         },
         methods: {

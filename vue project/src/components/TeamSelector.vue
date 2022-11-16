@@ -4,7 +4,7 @@
 			<button @click="onReload">reload</button>
 			<span class="span-remark">isLoading : <span :value="isLoading">{{isLoading}}</span></span>
 			<filtering-section name="selector" @personsFiltering="setPersonsFilterBy" :skillSet="this.skills"></filtering-section>
-			<grid-section name="results" :persons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
+			<grid-section name="results" :filteredPersons="filteredPersons" @isLoading="updateIsLoading"></grid-section>
 			<selected-section :persons="selectedPersons"></selected-section>
 			<!-- <selected-persons></selected-persons> -->
 		</div>
