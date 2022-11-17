@@ -1,5 +1,5 @@
 <template>
-    <div class="skills-spider" :class="transitionStates">
+    <div class="skills-spider" :class="[transitionStates]">
         <div class="overlay" ref="overlay"></div>
         <div style="position:relative"> 
             <!-- todo put in <style> -->

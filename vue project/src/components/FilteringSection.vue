@@ -165,7 +165,8 @@
         let filters = this.$refs.filteringSection.children;
         Array.from(filters).forEach( (filter) => {
             if (filter.getBoundingClientRect().top > filters[0].getBoundingClientRect().top)
-                filter.classList.add("flex-line-breaker");
+                filter.setAttribute("flex-line-breaker","");
+                // NOTE : static classes cannot be changed after Vue initialized the component if boolean classLists are used too. => Hence the setAttribute. 
         })
     }
 }
@@ -194,7 +195,7 @@
         }
 
         // &>* {
-        .flex-line-breaker {
+        [flex-line-breaker] {
             margin-top: 15px;
         }
 

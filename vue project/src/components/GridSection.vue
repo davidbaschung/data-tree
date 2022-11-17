@@ -95,7 +95,6 @@ import { mapState, mapGetters } from 'vuex'
                     })
                 }, 
                 deep: true,
-                immediate: true
             }
         },
         methods: {
@@ -155,6 +154,7 @@ import { mapState, mapGetters } from 'vuex'
 </script>
 
 <style lang="scss">
+// TODO : tooltip ?
     @import "../styles/person-card-dimensions.css";
 
     :root {
