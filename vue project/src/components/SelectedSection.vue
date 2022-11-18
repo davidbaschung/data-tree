@@ -2,6 +2,7 @@
     <div class="selected-section">
         <h3>Selected Persons :</h3>
         <br>
+        <p v-if="this.persons.length == 0" class="sticker">Click on the cards to select persons</p>
         <TransitionGroup name="selected-list" tag="ul">
             <li v-for="(p, index) of this.persons" :key="index">
                 {{p.name.first}} {{p.name.last}}
@@ -46,5 +47,11 @@
     }
     .selected-list-leave-to {
         opacity: 0;
+    }
+    .sticker {
+        padding: 5px;
+        background-color: rgb(0, 214, 214);
+        box-shadow: 0 0 5px -1px white;
+        border-radius: 10px;
     }
 </style>

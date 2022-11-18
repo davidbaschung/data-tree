@@ -21,7 +21,8 @@ let store = new Vuex.Store({
     someNumber: 3,
     persons: [],
     countries: [Set, Array], default: () => [], // allows to return the default type as an array
-    nativesCount: 0
+    nativesCount: 0,
+    params: {},
   },
   getters: {
     persons() {
@@ -105,6 +106,9 @@ let store = new Vuex.Store({
       state.persons.forEach( (person, index) => {
         person.isSelected = false;
       })
+    },
+    INIT_PARAMS({commit, state}) {
+      state.params.isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
     }
   }
 });

@@ -28,6 +28,7 @@
 		data() {
 			return {
 				currentPath: window.location.hash,
+				params: {},
 			}
 		},
 		computed: {
@@ -37,6 +38,7 @@
 		},
 		created() {
 			this.helloWorld();
+			this.$store.dispatch("INIT_PARAMS");
 		},
 		mounted() {
 			window.addEventListener('hashchange', () => {

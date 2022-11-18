@@ -1,8 +1,7 @@
 <template>
-    <div class="skills-spider" :class="[transitionStates]">
+    <div class="skills-spider" :class="[transitionStates]" ref="skillsSpider">
         <div class="overlay" ref="overlay"></div>
-        <div style="position:relative"> 
-            <!-- todo put in <style> -->
+        <div class="widget">
             <div class="spider-selector" ref="spiderSelector" @click="openWidget">
                 <div class="polygon" v-for="i in maxLevel+1" :key="i" :level="maxLevel+1-i" :ref="`level${maxLevel+1-i}`"
                     :style="getPolygonStyle(maxLevel+1-i)" @dragover.prevent @drop="dropPolygon($event)">
@@ -10,12 +9,16 @@
                 <div class="reset-button-outline" ref="resetButton" :style="getPolygonStyle(-1.25)"></div>
                 <div class="reset-button" ref="resetButton" :style="getPolygonStyle(-1.4)" @click="resetHandles">
                     <div class="centered-text">
-                        Reset
+                        {{ $store.state.params.isMobile ? 'Res.' : 'Reset'}}
                     </div>
                 </div>
                 <span class="skill-name" @drag.prevent v-for="(skill, i) of this.skills" :key="i+'skill-name'">
                     <div class="absolute-centered-text">
-                        {{skill.label}}
+                        {{ 
+                            $store.state.params.isMobile ?
+                            skill.label.length <= 5 ? skill.label : skill.label.substring(0, 5)+'.'
+                            : skill.label
+                        }}
                     </div>
                 </span>
                 <div class="handle" draggable="true" @dragstart="dragStartHandle" v-for="(handle,i) of value" :key="i+'handle'" :skillAxisIndex="i"></div>
@@ -37,7 +40,7 @@
                 isOpen: false,
                 isTransitioning: false,
                 polygonClipPath: String,
-                namesPositions: []
+                namesPositions: [],
             }
         },
         computed: {
@@ -54,10 +57,28 @@
                     closing:this.isClosing
                 }
             },
-            closedPolygonPadding() { return 15 / this.maxLevel },
-            closedSpiderPadding()  { return 2.5 }, // TODO put again in updatePolygonPadding
-            openedPolygonPadding() { return 20},
-            openedSpiderPadding() { return 110 },
+            openedSpiderMobilePadding() {
+                return 60;
+            },
+            closedSpiderMobilePadding() {
+                let padding = 20;
+                const resetButtonWidthMobile = 64;
+                if (this.isOpen) {
+                    let topLevelPolygonWidth = window.screen.width - 2 - this.openedSpiderMobilePadding;
+                    let paddingRange = topLevelPolygonWidth - resetButtonWidthMobile;
+                    padding = paddingRange / this.maxLevel;
+                    console.log(topLevelPolygonWidth, padding);
+                }
+                return padding;
+            },
+            paddings() {
+                return {
+                    closedPolygon: 15 / this.maxLevel,
+                    closedSpider: 2.5,
+                    openedSpider: this.$store.state.params.isMobile ? this.openedSpiderMobilePadding : 110,
+                    openedPolygon: this.$store.state.params.isMobile ? this.closedSpiderMobilePadding : 20,
+                }
+            },
         },
         emits: [ 'input' ],
         props: {
@@ -100,24 +121,34 @@
         },
         methods: {
             setSpiderWidth() {
-                let width = 2 * ( (this.maxLevel + 1) * this.openedPolygonPadding ) + 2 * this.openedSpiderPadding;
+                let width = 2 * ( (this.maxLevel + 1) * this.paddings.openedPolygon ) + 2 * this.paddings.closedSpider;
                 document.documentElement.style.setProperty("--spider-width", width + 'px');
             },
+            getOpenedPolygonPadding() { return this.$store.state.params.isMobile ? 20 : 20 },
             getPolygonStyle(level) {
+                let computerDimensions = {
+                    width: `calc(100% - 2 * ( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } ) )`,
+                    height: `calc(100% - 2 * ( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } ) )`,
+                    top: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
+                    left: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
+                };
+                let mobileDimensions = {
+                    width: `calc(100% - 2 * ( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } ) )`,
+                    height: `calc(100% - 2 * ( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } ) )`,
+                    top: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
+                    left: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
+                };
                 let properties = {
-                    width: `calc(100% - 2 * var(--current-polygon-padding) * ${ this.maxLevel - level } - 2 * var(--current-spider-padding) )`,
-                    height: `calc(100% - 2 * var(--current-polygon-padding) * ${ this.maxLevel - level } - 2 * var(--current-spider-padding) )`,
-                    top: `calc( var(--current-polygon-padding) * ${ this.maxLevel - level } + var(--current-spider-padding) )`,
-                    left: `calc( var(--current-polygon-padding) * ${ this.maxLevel - level } + var(--current-spider-padding) )`,
+                    ... (this.$store.state.params.isMobile ? mobileDimensions : computerDimensions),
                     'background-color': level == 0 ? "#b3ffb3" : level % 2 == 0 ?  this.secondaryColor : this.primaryColor,
                     'clip-path': this.polygonClipPath,
-                }
+                };
                 return Object.entries(properties).map( ([key, value]) => key+":"+value ).join(";");
             },
             updatePolygonStyle() {
                 let root = document.documentElement;
-                let polygonPadding = this.isOpened || this.isOpening ? this.openedPolygonPadding+'px' : this.closedPolygonPadding+'px';
-                let spiderPadding = this.isOpened || this.isOpening ? this.openedSpiderPadding+'px' : this.closedSpiderPadding+'px';
+                let polygonPadding = this.isOpened || this.isOpening ? this.paddings.openedPolygon+'px' : this.paddings.closedPolygon+'px';
+                let spiderPadding = this.isOpened || this.isOpening ? this.paddings.openedSpider+'px' : this.paddings.closedSpider+'px';
                 // let polygonPadding = this.isOpen ? '20px' : '2.5px';
                 // let spiderPadding = this.isOpen ? '110px' : '2.5px';;
                 root.style.setProperty("--current-polygon-padding", polygonPadding);
@@ -142,10 +173,18 @@
                 const containerMiddleWidth = this.$refs.spiderSelector.getBoundingClientRect().width/2;
                 for (let i=0; i<this.skills.length; i++) {
                     const axisAngleRad = (0-Math.PI/2) + Math.PI*2 / this.skills.length * i;
-                    const namePos = [
-                        (containerMiddleWidth + Math.cos(axisAngleRad) * (middleWidth + 50) + "" ).substring(0,6) + "px",
-                        (containerMiddleWidth + Math.sin(axisAngleRad) * (middleWidth + 15 + 20 * Math.abs(Math.cos(axisAngleRad))) + "" ).substring(0,6)  + "px",
-                    ];
+                    let namePos;
+                    if (this.$store.state.params.isMobile) {
+                        namePos = [
+                            (containerMiddleWidth + Math.cos(axisAngleRad) * (containerMiddleWidth - 30) + "" ).substring(0,6) + "px",
+                            (containerMiddleWidth + Math.sin(axisAngleRad) * (containerMiddleWidth - 40 + 10*Math.abs(Math.cos(axisAngleRad))) + "" ).substring(0,6)  + "px",
+                        ];
+                    } else {
+                        namePos = [
+                            (containerMiddleWidth + Math.cos(axisAngleRad) * (middleWidth + 50) + "" ).substring(0,6) + "px",
+                            (containerMiddleWidth + Math.sin(axisAngleRad) * (middleWidth + 15 + 20 * Math.abs(Math.cos(axisAngleRad))) + "" ).substring(0,6)  + "px",
+                        ];
+                    }
                     positions[i] = namePos;
                 }
                 this.namesPositions = positions;
@@ -205,6 +244,7 @@
                 this.updatePolygonStyle();
                 // root.style.setProperty("--current-polygon-padding", '20px');
                 // root.style.setProperty("--current-spider-padding", '110px');
+                document.body.classList.add("no-scroll");
                 setTimeout( () => {
                     document.querySelectorAll(".handle").forEach( (element, index) => {
                         this.isTransitioning = false;
@@ -226,6 +266,7 @@
             closeWidget() {
                 this.isTransitioning = true;
                 this.isOpen = true;
+                document.body.classList.remove("no-scroll");
                 setTimeout( () => { /* hides spider for 30ms to solve the glitch flashing the opened spider */
                     this.$refs.overlay.setAttribute("style","display:none");
                     this.$refs.spiderSelector.setAttribute("style","display:none");
@@ -258,12 +299,16 @@
                 this.closeWidget();
             });
             this.setPolygonClipPath();
+            if (this.$store.state.params.isMobile)
+                this.$refs.skillsSpider.setAttribute("mobile","");
+        },
+        updated() {
+            this.updatePolygonStyle();
         }
     }
 </script>
 
 <style>
-/* TODO adjust exact position */
     :root {
         --handle-radius: 8px;
         /* --current-polygon-padding: 2.5px;
@@ -274,7 +319,7 @@
     @keyframes open__spider {
         from {
             transform: scale(20%);
-            top: -215px;
+            top: calc( -1 * var(--spider-width) / 2.23 );
             border-radius: 65px;
         }
         to {
@@ -282,6 +327,21 @@
             top: 0px;
             border-radius: 30px;
         }
+    }
+    
+    @keyframes open__spider--mobile {
+        from {
+            transform: scale(0%);
+            border-radius: 65px;
+        }
+        to {
+            transform: scale(100%);
+            border-radius: 30px;
+        }
+    }
+
+    .widget {
+        position: relative;
     }
     .spider-selector {
         width: 30px;
@@ -291,17 +351,16 @@
         box-shadow: 0px 0px 3px 0px cyan;
         border-radius: 30px;
     }
-    .opening .spider-selector {
+    
+    .opening:not([mobile]) .spider-selector {
         animation: open__spider 0.5s normal;
     }
-    .opening .spider-selector,
-    .opened .spider-selector,
-    .closing .spider-selector {
+    .opening:not([mobile]) .spider-selector,
+    .opened:not([mobile]) .spider-selector,
+    .closing:not([mobile]) .spider-selector {
         z-index:3;
         position: absolute;
-        left: -250px;
-        /* width: 460px;
-        height: 460px; */
+        left: calc( -1 * var(--spider-width) / 2 - 25px);
         width: var(--spider-width);
         height: var(--spider-width);
         padding: 40px;
@@ -310,12 +369,38 @@
         outline-offset: -10px;
         box-shadow: none;
     }
-    .closing .spider-selector {
+    .closing:not([mobile]) .spider-selector {
         animation: open__spider 0.5s reverse;
     }
-    .closed .spider-selector {
+    .closed:not([mobile]) .spider-selector {
         bottom: 0px;
     }
+    
+    .opening[mobile] .spider-selector {
+        animation: open__spider--mobile 0.5s normal;
+    }
+    .opening[mobile] .spider-selector,
+    .opened[mobile] .spider-selector,
+    .closing[mobile] .spider-selector {
+        z-index:3;
+        position: fixed;
+        left: 2px;
+        top: calc( 50vh - (100vw - 14px) / 2 );
+        width: calc(100vw - 14px);
+        height: calc(100vw - 14px);
+        padding: 5px;
+        background-color: dodgerblue !important;
+        outline: 5px solid royalblue;
+        outline-offset: -5px;
+        box-shadow: none;
+    }
+    .closing[mobile] .spider-selector  {
+        animation: open__spider--mobile 0.5s reverse;
+    }
+    .closed[mobile] .spider-selector {
+        bottom: 0px;
+    }
+
     .reset-button-outline,
     .reset-button  {
         position: absolute;
@@ -340,11 +425,17 @@
     }
     .centered-text {
         text-align: center;
-        transform: translate(0, 120%);
         color: rgb(255, 233, 220);
         text-shadow: -2px -2px 0 var(--reset-color-1), 2px -2px 0 var(--reset-color-1), -2px 2px 0 var(--reset-color-1), 2px 2px 0 var(--reset-color-1);
         font-weight: bold;
         font-family: Sans-Serif;
+    }
+    :not([mobile]) .centered-text {
+        transform: translate(0, 120%);
+    }
+    [mobile] .centered-text {
+        transform: translate(0, 70%);
+        font-size: smaller;
     }
     .reset-button-outline .centered-text{
         text-shadow: -2px -2px 0 var(--reset-color-1), 2px -2px 0 var(--reset-color-1), -2px 2px 0 var(--reset-color-1), 2px 2px 0 var(--reset-color-1);
@@ -417,19 +508,35 @@
     .opened .spider-web {
         display: block;
     }
+    body.no-scroll {
+        height: 100%;
+        overflow: hidden;
+        margin: 0px;
+    }
     @keyframes open__overlay {
         from { opacity: 0% }
         to { opacity: 50% }
     }
     .overlay {
         z-index: 2;
-        position: absolute;
+        position: fixed;
+        background-color: darkgreen;
+    }
+    :not([mobile]) .overlay {
         top: 10px;
         left: 10px;
         width: calc(100% - 20px);
         height: calc(100% - 20px);
-        background-color: darkgreen;
-        box-shadow: 0px 0px 10px 10px #0ff;
+        box-shadow: 0px 0px 0px 40px #0ff;
+        border-radius:15px;
+    }
+    [mobile] .overlay {
+        top: 4px;
+        left: 4px;
+        width: calc(100% - 8px);
+        height: calc(100% - 8px);
+        box-shadow: 0px 0px 0px 40px #0ff;
+        border-radius:15px;
     }
     .closed > .overlay {
         display: none;
