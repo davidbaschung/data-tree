@@ -102,7 +102,7 @@
                 type: Number,
                 validator: (max) => max <= 10,
                     // this.value.every( val => // impossible to compare to this.value, props validator are run iteratively in a for-loop
-                //         val.level <= max
+                    //         val.level <= max
                     // ),
                 required: false,
                 default: 5,
@@ -137,8 +137,6 @@
                     top: `calc( ( 100% - ${this.lastLevelWidthMobile / Math.abs(level) * mobileCenterMultiplier }px ) / 2 )`,
                     left: `calc( ( 100% - ${this.lastLevelWidthMobile / Math.abs(level) * mobileCenterMultiplier }px) / 2 )`,
                 }
-                // if (this.$store.state.params.isMobile && level<0)
-                //     debugger
                 let properties = {
                     ... (this.$store.state.params.isMobile && level<0 ? mobileCenterDimensions : computerDimensions),
                     'background-color': level == 0 ? "#b3ffb3" : level % 2 == 0 ?  this.secondaryColor : this.primaryColor,
@@ -150,8 +148,6 @@
                 let root = document.documentElement;
                 let polygonPadding = ! this.isClosed ? this.paddings.openedPolygon+'px' : this.paddings.closedPolygon+'px';
                 let spiderPadding = ! this.isClosed ? this.paddings.openedSpider+'px' : this.paddings.closedSpider+'px';
-                // let polygonPadding = this.isOpen ? '20px' : '2.5px';
-                // let spiderPadding = this.isOpen ? '110px' : '2.5px';;
                 root.style.setProperty("--current-polygon-padding", polygonPadding);
                 root.style.setProperty("--current-spider-padding", spiderPadding);
             },
@@ -242,15 +238,11 @@
                 let root = document.documentElement;
                 this.isTransitioning = true;
                 this.isOpen = false;
-                // this.updatePolygonStyle();
-                // root.style.setProperty("--current-polygon-padding", '20px');
-                // root.style.setProperty("--current-spider-padding", '110px');
                 document.body.classList.add("no-scroll");
                 setTimeout( () => {
                     document.querySelectorAll(".handle").forEach( (element, index) => {
                         this.isTransitioning = false;
                         this.isOpen = true;
-                        // this.updatePolygonStyle();
                 this.setSpiderWidth();
                         this.setHandlePositionByPlace(element, this.skills[index].level, index);
                         element.skillAxisIndex = parseInt(index);
@@ -288,7 +280,6 @@
             for (let i=0; i<this.skills.length; i++)
                 this.namesPositions[i] = ["0px", "0px"];
                 this.setSpiderWidth();
-                // this.updatePolygonStyle();
         },
         mounted() {
             let root = document.documentElement;
@@ -313,8 +304,6 @@
 <style>
     :root {
         --handle-radius: 8px;
-        /* --current-polygon-padding: 2.5px;
-        --current-spider-padding: 2.5px; */
         --reset-color-1: rgb(233, 116, 101);
         --reset-color-2: rgb(255, 141, 126);
     }
