@@ -46,7 +46,7 @@
             minLabel="0" maxLabel="100"
             :dataArray="personsAgeList" :interval="10"
         ></double-range-slider>
-        <skills-spider v-model="filterBy.skills" :maxLevel="10"></skills-spider>
+        <skills-spider v-model="filterBy.skills" :maxLevel="5"></skills-spider>
         <div class="flex-grid">
             <div class="flex-column">
                 <div class="flex-row">

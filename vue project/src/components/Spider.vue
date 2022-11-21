@@ -41,6 +41,7 @@
                 isTransitioning: false,
                 polygonClipPath: String,
                 namesPositions: [],
+                lastLevelWidthMobile: 85,
             }
         },
         computed: {
@@ -62,13 +63,10 @@
             },
             closedSpiderMobilePadding() {
                 let padding = 20;
-                const resetButtonWidthMobile = 64;
-                if (this.isOpen) {
-                    let topLevelPolygonWidth = window.screen.width - 2 - this.openedSpiderMobilePadding;
-                    let paddingRange = topLevelPolygonWidth - resetButtonWidthMobile;
-                    padding = paddingRange / this.maxLevel;
-                    console.log(topLevelPolygonWidth, padding);
-                }
+                let topLevelPolygonWidth = window.screen.width - 2 * ( 2 + this.openedSpiderMobilePadding );
+                let paddingRange = ( topLevelPolygonWidth - this.lastLevelWidthMobile ) / 2;
+                padding = paddingRange / this.maxLevel;
+                console.log(topLevelPolygonWidth, padding);
                 return padding;
             },
             paddings() {
@@ -121,7 +119,7 @@
         },
         methods: {
             setSpiderWidth() {
-                let width = 2 * ( (this.maxLevel + 1) * this.paddings.openedPolygon ) + 2 * this.paddings.closedSpider;
+                let width = 2 * ( (this.maxLevel + 1) * this.paddings.openedPolygon ) + 2 * this.paddings.openedSpider;
                 document.documentElement.style.setProperty("--spider-width", width + 'px');
             },
             getOpenedPolygonPadding() { return this.$store.state.params.isMobile ? 20 : 20 },
@@ -132,14 +130,17 @@
                     top: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
                     left: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
                 };
-                let mobileDimensions = {
-                    width: `calc(100% - 2 * ( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } ) )`,
-                    height: `calc(100% - 2 * ( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } ) )`,
-                    top: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
-                    left: `calc( var(--current-spider-padding) + var(--current-polygon-padding) * ${ this.maxLevel - level } )`,
-                };
+                let mobileCenterMultiplier = 0.6;
+                let mobileCenterDimensions = {
+                    width: `${this.lastLevelWidthMobile / Math.abs(level) * mobileCenterMultiplier }px`,
+                    height: `${this.lastLevelWidthMobile / Math.abs(level) * mobileCenterMultiplier }px`,
+                    top: `calc( ( 100% - ${this.lastLevelWidthMobile / Math.abs(level) * mobileCenterMultiplier }px ) / 2 )`,
+                    left: `calc( ( 100% - ${this.lastLevelWidthMobile / Math.abs(level) * mobileCenterMultiplier }px) / 2 )`,
+                }
+                // if (this.$store.state.params.isMobile && level<0)
+                //     debugger
                 let properties = {
-                    ... (this.$store.state.params.isMobile ? mobileDimensions : computerDimensions),
+                    ... (this.$store.state.params.isMobile && level<0 ? mobileCenterDimensions : computerDimensions),
                     'background-color': level == 0 ? "#b3ffb3" : level % 2 == 0 ?  this.secondaryColor : this.primaryColor,
                     'clip-path': this.polygonClipPath,
                 };
@@ -147,8 +148,8 @@
             },
             updatePolygonStyle() {
                 let root = document.documentElement;
-                let polygonPadding = this.isOpened || this.isOpening ? this.paddings.openedPolygon+'px' : this.paddings.closedPolygon+'px';
-                let spiderPadding = this.isOpened || this.isOpening ? this.paddings.openedSpider+'px' : this.paddings.closedSpider+'px';
+                let polygonPadding = ! this.isClosed ? this.paddings.openedPolygon+'px' : this.paddings.closedPolygon+'px';
+                let spiderPadding = ! this.isClosed ? this.paddings.openedSpider+'px' : this.paddings.closedSpider+'px';
                 // let polygonPadding = this.isOpen ? '20px' : '2.5px';
                 // let spiderPadding = this.isOpen ? '110px' : '2.5px';;
                 root.style.setProperty("--current-polygon-padding", polygonPadding);
@@ -241,7 +242,7 @@
                 let root = document.documentElement;
                 this.isTransitioning = true;
                 this.isOpen = false;
-                this.updatePolygonStyle();
+                // this.updatePolygonStyle();
                 // root.style.setProperty("--current-polygon-padding", '20px');
                 // root.style.setProperty("--current-spider-padding", '110px');
                 document.body.classList.add("no-scroll");
@@ -250,6 +251,7 @@
                         this.isTransitioning = false;
                         this.isOpen = true;
                         // this.updatePolygonStyle();
+                this.setSpiderWidth();
                         this.setHandlePositionByPlace(element, this.skills[index].level, index);
                         element.skillAxisIndex = parseInt(index);
                         this.$refs.spiderSelector.focus();
@@ -286,7 +288,7 @@
             for (let i=0; i<this.skills.length; i++)
                 this.namesPositions[i] = ["0px", "0px"];
                 this.setSpiderWidth();
-                this.updatePolygonStyle();
+                // this.updatePolygonStyle();
         },
         mounted() {
             let root = document.documentElement;
